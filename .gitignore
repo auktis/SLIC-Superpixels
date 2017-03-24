@@ -2,5 +2,7 @@ CMakeCache.txt
 CMakeFiles/
 Makefile
 cmake_install.cmake
+*.user
+*.cbp
 *~
 *.o
