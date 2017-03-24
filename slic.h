@@ -48,10 +48,10 @@ typedef std::vector<std::vector<int> >  vec2di;
 typedef std::vector<std::vector<bool> > vec2db;
 
 
-typedef  DGtal::ImageContainerBySTLVector<DGtal::Z2i::Domain, unsigned int> Image2D;
+typedef DGtal::ImageContainerBySTLVector<DGtal::Z2i::Domain, unsigned int> Image2D;
 
 
-class Slic{
+class Slic {
   
 private:
   /* The cluster assignments and distance values for each pixel. */
