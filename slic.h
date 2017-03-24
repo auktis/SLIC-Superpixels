@@ -85,7 +85,13 @@ public:
   /* Class constructors and deconstructors. */
   Slic();
   ~Slic();
-        
+
+  /*return width of picture*/
+  unsigned int get_width(Image2D &);
+
+  /*return height of picture*/
+  unsigned int get_height(Image2D &);
+
   /* Generate an over-segmentation for an image. */
   void generate_superpixels(Image2D &, int step, int nc);
   /* Enforce connectivity for an image. */

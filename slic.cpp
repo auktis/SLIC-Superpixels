@@ -46,8 +46,8 @@ void Slic::clear_data()
  */
 void Slic::init_data(Image2D& image)
 {
-  unsigned int imageWidth = 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
-  unsigned int imageHeight = 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+  unsigned int imageWidth = get_width(image);
+  unsigned int imageHeight = get_height(image);
 
   /* Initialize the cluster and distance matrices. */
   for (int i = 0; i < imageWidth; i++) {
@@ -147,7 +147,15 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
   return loc_min;
 }
 
+unsigned int Slic::get_width(Image2D& image)
+{
+  return 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
+}
 
+unsigned int Slic::get_height(Image2D& image)
+{
+  return 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+}
 
 
 /*
@@ -162,8 +170,9 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
   this->step = step;
   this->nc = nc;
   this->ns = step;
-  unsigned int imageWidth = 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
-  unsigned int imageHeight = 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+
+  unsigned int imageWidth = get_width(image);
+  unsigned int imageHeight = get_height(image);
 
   /* Clear previous data (if any), and re-initialize it. */
   clear_data();
@@ -180,7 +189,7 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
 
     ToCvScalarFct toScal;
 
-    for (int j = 0; j < (int) centers.size(); j++) {
+    for (int j = 0; j < centers.size(); j++) {
       /* Only compare to pixels in a 2 x step by 2 x step region. */
       for (int k = centers[j][3] - step; k < centers[j][3] + step; k++) {
         for (int l = centers[j][4] - step; l < centers[j][4] + step; l++) {
@@ -200,7 +209,7 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
     }
 
     /* Clear the center values. */
-    for (int j = 0; j < (int) centers.size(); j++) {
+    for (int j = 0; j < centers.size(); j++) {
       centers[j][0] = centers[j][1] = centers[j][2] = centers[j][3] = centers[j][4] = 0;
       center_counts[j] = 0;
     }
@@ -225,7 +234,7 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
     }
 
     /* Normalize the clusters. */
-    for (int j = 0; j < (int) centers.size(); j++) {
+    for (int j = 0; j < centers.size(); j++) {
       centers[j][0] /= center_counts[j];
       centers[j][1] /= center_counts[j];
       centers[j][2] /= center_counts[j];
@@ -249,10 +258,10 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
 void Slic::create_connectivity(Image2D& image)
 {
   int label = 0, adjlabel = 0;
-  unsigned int imageWidth = 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
-  unsigned int imageHeight = 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+  unsigned int imageWidth = get_width(image);
+  unsigned int imageHeight = get_height(image);
 
-  const int lims = (imageWidth * imageHeight) / ((int)centers.size());
+  const int lims = (imageWidth * imageHeight) / (centers.size());
 
   const int dx4[4] = { -1,  0,  1,  0};
   const int dy4[4] = { 0, -1,  0,  1};
@@ -329,7 +338,7 @@ void Slic::create_connectivity(Image2D& image)
  */
 void Slic::display_center_grid(Image2D& image, DGtal::Color& colour)
 {
-  for (int i = 0; i < (int) centers.size(); i++) {
+  for (int i = 0; i < centers.size(); i++) {
     image.setValue ( DGtal::Z2i::Point(centers[i][3], centers[i][4]), colour.getRGB());
   }
 }
@@ -345,8 +354,8 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
 {
   const int dx8[8] = { -1, -1,  0,  1, 1, 1, 0, -1};
   const int dy8[8] = { 0, -1, -1, -1, 0, 1, 1,  1};
-  unsigned int imageWidth = 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
-  unsigned int imageHeight = 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+  unsigned int imageWidth = get_width(image);
+  unsigned int imageHeight = get_height(image);
 
   /* Initialize the contour vector and the matrix detailing whether a pixel
    * is already taken to be a contour. */
@@ -388,7 +397,7 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
   }
 
   /* Draw the contour pixels. */
-  for (int i = 0; i < (int)contours.size(); i++) {
+  for (int i = 0; i < contours.size(); i++) {
     image.setValue(DGtal::Z2i::Point(contours[i][0], contours[i][1]), colour.getRGB());
 
   }
@@ -408,8 +417,8 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
 void Slic::colour_with_cluster_means(Image2D& image)
 {
   std::vector<CvScalar> colours(centers.size());
-  unsigned int imageWidth = 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
-  unsigned int imageHeight = 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+  unsigned int imageWidth = get_width(image);
+  unsigned int imageHeight = get_height(image);
 
   /* Gather the colour values per cluster. */
   for (int i = 0; i < imageWidth; i++) {
@@ -425,7 +434,7 @@ void Slic::colour_with_cluster_means(Image2D& image)
   }
 
   /* Divide by the number of pixels per cluster to get the mean colour. */
-  for (int i = 0; i < (int)colours.size(); i++) {
+  for (int i = 0; i < colours.size(); i++) {
     colours[i].val[0] /= center_counts[i];
     colours[i].val[1] /= center_counts[i];
     colours[i].val[2] /= center_counts[i];

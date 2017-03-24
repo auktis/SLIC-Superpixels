@@ -3,7 +3,7 @@
 * test_slic.cpp.
 *
 * Written by: Pascal Mettes.
-* adated to the DGtal lib by B. Kerautret 24/04/15
+* adapted to the DGtal lib by B. Kerautret 24/04/15
 * This file creates an over-segmentation of a provided image based on the SLIC
 * superpixel algorithm, as implemented in slic.h and slic.cpp.
 */
@@ -76,17 +76,17 @@ main(int argc, char** argv)
   std::string nameImage = vm["input"].as<std::string>();
   std::string nameImageOutput = vm["output"].as<std::string>();
   Image2D image = GenericReader<Image2D>::import(nameImage);
-  unsigned int imageWidth = image.domain().upperBound()[0] - image.domain().lowerBound()[0] + 1;
-  unsigned int imageHeight = image.domain().upperBound()[1] - image.domain().lowerBound()[1] + 1;
 
+  Slic slic;
+  unsigned int imageWidth = slic.get_width(image);
+  unsigned int imageHeight = slic.get_height(image);
 
   int nr = vm["n"].as<int>();
   int nc = vm["w"].as<int>();
   double step = sqrt((imageWidth * imageHeight) / (double) nr);
 
-
   /* Perform the SLIC superpixel algorithm. */
-  Slic slic;
+
   slic.generate_superpixels(image, step, nc);
   slic.create_connectivity(image);
   DGtal::Color c(0, 0, 204);
