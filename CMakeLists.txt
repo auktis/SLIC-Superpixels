@@ -20,6 +20,9 @@ if ( Boost_FOUND )
    SET(DGtalLibInc ${Boost_INCLUDE_DIRS})
 endif( Boost_FOUND) 
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+endif()
 
 FOREACH(FILE ${FILES})
    ADD_EXECUTABLE(${FILE} ${FILE}  slic )

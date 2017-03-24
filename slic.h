@@ -43,9 +43,9 @@ typedef struct ToCvScalarFct{
 #define NR_ITERATIONS 10
 
 
-typedef std::vector<std::vector<double> >  vec2dd;
-typedef std::vector<std::vector<int> >  vec2di;
-typedef std::vector<std::vector<bool> > vec2db;
+typedef std::vector<std::vector<double> > vec2dd;
+typedef std::vector<std::vector<int> >    vec2di;
+typedef std::vector<std::vector<bool> >   vec2db;
 
 
 typedef DGtal::ImageContainerBySTLVector<DGtal::Z2i::Domain, unsigned int> Image2D;
@@ -76,6 +76,10 @@ private:
   /* Remove and initialize the 2d vectors. */
   void clear_data();
   void init_data(Image2D &image);
+  
+  /* Helpers 
+     grayscape = 0.299r + 0.587g + 0.114b.
+   */
 
 public:
   /* Class constructors and deconstructors. */

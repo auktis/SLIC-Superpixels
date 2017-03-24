@@ -51,16 +51,16 @@ void Slic::init_data(Image2D& image)
 
   /* Initialize the cluster and distance matrices. */
   for (int i = 0; i < imageWidth; i++) {
-    std::vector<int> cr;
-    std::vector<double> dr;
+    std::vector<int> cluster_row;
+    std::vector<double> dist_row;
 
     for (int j = 0; j < imageHeight; j++) {
-      cr.push_back(-1);
-      dr.push_back(std::numeric_limits<double>::max());
+      cluster_row.push_back(-1);
+      dist_row.push_back(std::numeric_limits<double>::max());
     }
 
-    clusters.push_back(cr);
-    distances.push_back(dr);
+    clusters.push_back(cluster_row);
+    distances.push_back(dist_row);
   }
 
   ToCvScalarFct toCv;
