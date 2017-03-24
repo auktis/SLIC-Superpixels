@@ -2,6 +2,9 @@ CMakeCache.txt
 CMakeFiles/
 Makefile
 cmake_install.cmake
+kdev4/
+compile_commands.json
+*.kdev4
 *.user
 *.cbp
 *~
