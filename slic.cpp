@@ -37,6 +37,7 @@ void Slic::clear_data()
 
 
 
+
 /*
  * Initialize the cluster centers and initial values of the pixel-wise cluster
  * assignment and distance values.
@@ -86,6 +87,20 @@ void Slic::init_data(Image2D& image)
     }
   }
 }
+
+
+
+
+/*
+ * Convert dgtal:Color to GrayScale
+ */
+double Slic::colorToGrayscale(DGtal::Color &color)
+{
+  return round(0.299*color.red() + 0.587*color.green() + 0.114*color.blue());
+}
+
+
+
 
 /*
  * Compute the distance between a cluster center and an individual pixel.
@@ -147,11 +162,23 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
   return loc_min;
 }
 
+
+
+/*
+ * input: Image2D
+ * output: width of input image
+ */
 unsigned int Slic::get_width(Image2D& image)
 {
   return 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
 }
 
+
+
+/*
+ * input: Image2D
+ * output: height of input image
+ */
 unsigned int Slic::get_height(Image2D& image)
 {
   return 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
@@ -252,7 +279,7 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
  * in the paper, but forms an active part of the implementation of the authors
  * of the paper.
  *
- * Input : The image (IplImage*).
+ * Input : The image (Image2D&).
  * Output: -
  */
 void Slic::create_connectivity(Image2D& image)
@@ -264,7 +291,7 @@ void Slic::create_connectivity(Image2D& image)
   const int lims = (imageWidth * imageHeight) / (centers.size());
 
   const int dx4[4] = { -1,  0,  1,  0};
-  const int dy4[4] = { 0, -1,  0,  1};
+  const int dy4[4] = { 0 , -1,  0,  1};
 
   /* Initialize the new cluster matrix. */
   vec2di new_clusters;
@@ -287,9 +314,9 @@ void Slic::create_connectivity(Image2D& image)
 
         /* Find an adjacent label, for possible use later. */
         for (int k = 0; k < 4; k++) {
-          int x = elements[0][0] + dx4[k], y = elements[0][1] + dy4[k];
+          size_t x = elements[0][0] + dx4[k], y = elements[0][1] + dy4[k];
 
-          if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
+          if (x >= 0 && x < imageWidth && y >= 0 && y < imageHeight) {
             if (new_clusters[x][y] >= 0) {
               adjlabel = new_clusters[x][y];
             }
@@ -300,9 +327,9 @@ void Slic::create_connectivity(Image2D& image)
 
         for (int c = 0; c < count; c++) {
           for (int k = 0; k < 4; k++) {
-            int x = elements[c][0] + dx4[k], y = elements[c][1] + dy4[k];
+            size_t x = elements[c][0] + dx4[k], y = elements[c][1] + dy4[k];
 
-            if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
+            if (x >= 0 && x < imageWidth && y >= 0 && y < imageHeight) {
               if (new_clusters[x][y] == -1 && clusters[i][j] == clusters[x][y]) {
                 elements.push_back(DGtal::Z2i::Point(x, y));
                 new_clusters[x][y] = label;
@@ -379,9 +406,9 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
 
       /* Compare the pixel to its 8 neighbours. */
       for (int k = 0; k < 8; k++) {
-        int x = i + dx8[k], y = j + dy8[k];
+        size_t x = i + dx8[k], y = j + dy8[k];
 
-        if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
+        if (x >= 0 && x < imageWidth && y >= 0 && y < imageHeight) {
           if (istaken[x][y] == false && clusters[i][j] != clusters[x][y]) {
             nr_p += 1;
           }
