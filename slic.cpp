@@ -6,7 +6,7 @@
  */
 Slic::Slic()
 {
-
+  
 }
 
 
@@ -33,6 +33,28 @@ void Slic::clear_data()
   distances.clear();
   centers.clear();
   center_counts.clear();
+}
+
+Center_t Slic::toCenterType(const Image2D& image, const DGtal::Z2i::Point& p)
+{
+  Center_t c;
+  c.x = p[0];
+  c.y = p[1];
+  Color_t cl = getColorAt(image, p[0], p[1]);
+  c.color = cl;
+  
+  return c;
+}
+
+Color_t Slic::getColorAt(const Image2D &image, int x, int y)
+{
+  Color_t c;
+  DGtal::Color color(image(DGtal::Z2i::Point(x, y)), 255);
+  c.r = color.red();
+  c.g = color.green();
+  c.b = color.blue();
+  
+  return c;
 }
 
 
@@ -63,22 +85,15 @@ void Slic::init_data(Image2D& image)
     distances.push_back(dist_row);
   }
 
-  ToCvScalarFct toCv;
 
   /* Initialize the centers and counters. */
   for (size_t i = step; i < imageWidth - step / 2; i += step) {
     for (size_t j = step; j < imageHeight - step / 2; j += step) {
-      std::vector<double> center;
+      Center_t center;
       /* Find the local minimum (gradient-wise). */
       DGtal::Z2i::Point nc = find_local_minimum(image, DGtal::Z2i::Point(i, j));
-      CvScalar colour = toCv(image(nc));
 
-      /* Generate the center vector. */
-      center.push_back(colour.val[0]);
-      center.push_back(colour.val[1]);
-      center.push_back(colour.val[2]);
-      center.push_back(nc[0]);
-      center.push_back(nc[1]);
+      center = toCenterType(image, nc);
 
       /* Append to vector of centers. */
       centers.push_back(center);
@@ -94,12 +109,12 @@ void Slic::init_data(Image2D& image)
  *         the pixel (CvScalar).
  * Output: The distance (double).
  */
-double Slic::compute_dist(int ci, DGtal::Z2i::Point pixel, CvScalar colour)
+double Slic::compute_dist(int ci, DGtal::Z2i::Point pixel, Color_t color)
 {
-  double dc = sqrt(pow(centers[ci][0] - colour.val[0], 2) 
-                 + pow(centers[ci][1] - colour.val[1], 2) 
-                 + pow(centers[ci][2] - colour.val[2], 2));
-  double ds = sqrt(pow(centers[ci][3] - pixel[0], 2) + pow(centers[ci][4] - pixel[1], 2));
+  double dc = sqrt(pow(centers[ci].color.r - color.r, 2) 
+                 + pow(centers[ci].color.g - color.g, 2) 
+                 + pow(centers[ci].color.b - color.b, 2));
+  double ds = sqrt(pow(centers[ci].x - pixel[0], 2) + pow(centers[ci].y - pixel[1], 2));
 
   return sqrt(pow(dc / nc, 2) + pow(ds / ns, 2));
 }
@@ -118,17 +133,16 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
 {
   double min_grad = std::numeric_limits<double>::max();
   DGtal::Z2i::Point loc_min = center;
-  ToCvScalarFct toScal;
 
   for (int i = center[0] - 1; i < center[0] + 2; i++) {
     for (int j = center[1] - 1; j < center[1] + 2; j++) {
-      CvScalar c1 = toScal(image(DGtal::Z2i::Point(i, j + 1)));
-      CvScalar c2 = toScal(image(DGtal::Z2i::Point(i + 1, j)));
-      CvScalar c3 = toScal(image(DGtal::Z2i::Point(i, j)));
+      Color_t c1 = getColorAt(image, i,   j+1);
+      Color_t c2 = getColorAt(image, i+1, j  );
+      Color_t c3 = getColorAt(image, i,   j  );
       /* Convert colour values to grayscale values. */
-      double i1 = c1.val[0];
-      double i2 = c2.val[0];
-      double i3 = c3.val[0];
+      double i1 = c1.r;
+      double i2 = c2.r;
+      double i3 = c3.r;
       /*double i1 = c1.val[0] * 0.11 + c1.val[1] * 0.59 + c1.val[2] * 0.3;
        double i2 = c2.val[0] * 0.11 + c2.val[1] * 0.59 + c2.val[2] * 0.3;
        double i3 = c3.val[0] * 0.11 + c3.val[1] * 0.59 + c3.val[2] * 0.3;*/
@@ -187,15 +201,14 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
       }
     }
 
-    ToCvScalarFct toScal;
 
     for (size_t j = 0; j < centers.size(); j++) {
       /* Only compare to pixels in a 2 x step by 2 x step region. */
-      for (int k = centers[j][3] - step; k < centers[j][3] + step; k++) {
-        for (int l = centers[j][4] - step; l < centers[j][4] + step; l++) {
+      for (int k = centers[j].x - step; k < centers[j].x + step; k++) {
+        for (int l = centers[j].y - step; l < centers[j].y + step; l++) {
           if (k >= 0 && (size_t)k < imageWidth && l >= 0 && (size_t)l < imageHeight) {
-            unsigned int colour = image(DGtal::Z2i::Point(k, l));
-            double d = compute_dist(j, DGtal::Z2i::Point(k, l), toScal(colour));
+            Color_t color = getColorAt(image, k, l);
+            double d = compute_dist(j, DGtal::Z2i::Point(k, l), color);
 
             /* Update cluster allocation if the cluster minimizes the
                distance. */
@@ -210,7 +223,8 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
 
     /* Clear the center values. */
     for (size_t j = 0; j < centers.size(); j++) {
-      centers[j][0] = centers[j][1] = centers[j][2] = centers[j][3] = centers[j][4] = 0;
+      centers[j].x = centers[j].y = 0;
+      centers[j].color.r = centers[j].color.g = centers[j].color.b = 0;
       center_counts[j] = 0;
     }
 
@@ -220,14 +234,14 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
         int c_id = clusters[j][k];
 
         if (c_id != -1) {
-          CvScalar colour = toScal(image(DGtal::Z2i::Point(j, k)));
+          Color_t color = getColorAt(image, j, k);
 
-          centers[c_id][0] += colour.val[0];
-          centers[c_id][1] += colour.val[1];
-          centers[c_id][2] += colour.val[2];
-          centers[c_id][3] += j;
-          centers[c_id][4] += k;
-
+          centers[c_id].color.r += color.r;
+          centers[c_id].color.g += color.g;
+          centers[c_id].color.b += color.b;
+          centers[c_id].x += j;
+          centers[c_id].y += k;
+          
           center_counts[c_id] += 1;
         }
       }
@@ -235,11 +249,11 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
 
     /* Normalize the clusters. */
     for (size_t j = 0; j < centers.size(); j++) {
-      centers[j][0] /= center_counts[j];
-      centers[j][1] /= center_counts[j];
-      centers[j][2] /= center_counts[j];
-      centers[j][3] /= center_counts[j];
-      centers[j][4] /= center_counts[j];
+      centers[j].color.r /= center_counts[j];
+      centers[j].color.g /= center_counts[j];
+      centers[j].color.b /= center_counts[j];
+      centers[j].x /= center_counts[j];
+      centers[j].y /= center_counts[j];
     }
   }
 }
@@ -339,7 +353,7 @@ void Slic::create_connectivity(Image2D& image)
 void Slic::display_center_grid(Image2D& image, DGtal::Color& colour)
 {
   for (size_t i = 0; i < centers.size(); i++) {
-    image.setValue ( DGtal::Z2i::Point(centers[i][3], centers[i][4]), colour.getRGB());
+    image.setValue(DGtal::Z2i::Point(centers[i].x, centers[i].y), colour.getRGB());
   }
 }
 
@@ -416,7 +430,7 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
  */
 void Slic::colour_with_cluster_means(Image2D& image)
 {
-  std::vector<CvScalar> colours(centers.size());
+  std::vector<Color_t> colors(centers.size());
   unsigned int imageWidth = get_width(image);
   unsigned int imageHeight = get_height(image);
 
@@ -424,28 +438,27 @@ void Slic::colour_with_cluster_means(Image2D& image)
   for (size_t i = 0; i < imageWidth; i++) {
     for (size_t j = 0; j < imageHeight; j++) {
       int index = clusters[i][j];
-      ToCvScalarFct toScal;
-      CvScalar colour = toScal(image(DGtal::Z2i::Point(i, j)));
+      Color_t color = getColorAt(image, i, j);
 
-      colours[index].val[0] += colour.val[0];
-      colours[index].val[1] += colour.val[1];
-      colours[index].val[2] += colour.val[2];
+      colors[index].r += color.r;
+      colors[index].g += color.g;
+      colors[index].b += color.b;
     }
   }
 
   /* Divide by the number of pixels per cluster to get the mean colour. */
-  for (size_t i = 0; i < colours.size(); i++) {
-    colours[i].val[0] /= center_counts[i];
-    colours[i].val[1] /= center_counts[i];
-    colours[i].val[2] /= center_counts[i];
+  for (size_t i = 0; i < colors.size(); i++) {
+    colors[i].r /= center_counts[i];
+    colors[i].g /= center_counts[i];
+    colors[i].b /= center_counts[i];
   }
 
   /* Fill in. */
   for (size_t i = 0; i < imageWidth; i++) {
     for (size_t j = 0; j < imageHeight; j++) {
       DGtal::Color col;
-      CvScalar ncolour = colours[clusters[i][j]];
-      col.setRGBf(ncolour.val[0] / 255.0, ncolour.val[1] / 255.0, ncolour.val[2] / 255.0 );
+      Color_t ncolor = colors[clusters[i][j]];
+      col.setRGBf(ncolor.r / 255.0, ncolor.g / 255.0, ncolor.b / 255.0 );
       image.setValue(DGtal::Z2i::Point(i, j), col.getRGB());
     }
   }
