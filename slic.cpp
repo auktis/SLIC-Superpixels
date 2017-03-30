@@ -59,6 +59,7 @@ Color_t Slic::getColorAt(const Image2D &image, int x, int y)
 
 
 
+
 /*
  * Initialize the cluster centers and initial values of the pixel-wise cluster
  * assignment and distance values.
@@ -101,6 +102,20 @@ void Slic::init_data(Image2D& image)
     }
   }
 }
+
+
+
+
+/*
+ * Convert dgtal:Color to GrayScale
+ */
+double Slic::colorToGrayscale(DGtal::Color &color)
+{
+  return round(0.299*color.red() + 0.587*color.green() + 0.114*color.blue());
+}
+
+
+
 
 /*
  * Compute the distance between a cluster center and an individual pixel.
@@ -161,11 +176,23 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
   return loc_min;
 }
 
+
+
+/*
+ * input: Image2D
+ * output: width of input image
+ */
 unsigned int Slic::get_width(Image2D& image)
 {
   return 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
 }
 
+
+
+/*
+ * input: Image2D
+ * output: height of input image
+ */
 unsigned int Slic::get_height(Image2D& image)
 {
   return 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
@@ -266,7 +293,7 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
  * in the paper, but forms an active part of the implementation of the authors
  * of the paper.
  *
- * Input : The image (IplImage*).
+ * Input : The image (Image2D&).
  * Output: -
  */
 void Slic::create_connectivity(Image2D& image)
@@ -278,7 +305,7 @@ void Slic::create_connectivity(Image2D& image)
   const int lims = (imageWidth * imageHeight) / (centers.size());
 
   const int dx4[4] = { -1,  0,  1,  0};
-  const int dy4[4] = { 0, -1,  0,  1};
+  const int dy4[4] = { 0 , -1,  0,  1};
 
   /* Initialize the new cluster matrix. */
   vec2di new_clusters;

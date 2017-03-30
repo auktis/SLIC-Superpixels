@@ -86,11 +86,16 @@ private:
   void clear_data();
   void init_data(Image2D &image);
   
-  /* Helpers 
-     grayscape = 0.299r + 0.587g + 0.114b.
+
+  /**
+   * Helpers 
    */
   Center_t toCenterType(const Image2D& image, const DGtal::Z2i::Point& p);
   Color_t getColorAt(const Image2D &image, int x, int y);
+
+  /* Convert dgtal:Color to GrayScale */
+  double colorToGrayscale(DGtal::Color &color);
+
 
 public:
   /* Class constructors and deconstructors. */
