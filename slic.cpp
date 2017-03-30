@@ -62,9 +62,9 @@ Color_t Slic::getColorAt(const Image2D &image, int x, int y)
 /*
  * Convert dgtal:Color to GrayScale
  */
-double Slic::colorToGrayscale(DGtal::Color &color)
+double Slic::colorToGrayscale(Color_t color)
 {
-  return round(0.299*color.red() + 0.587*color.green() + 0.114*color.blue());
+  return round(0.299*color.r + 0.587*color.g + 0.114*color.b);
 }
 
 /*

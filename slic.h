@@ -94,7 +94,7 @@ private:
   Color_t getColorAt(const Image2D &image, int x, int y);
 
   /* Convert dgtal:Color to GrayScale */
-  double colorToGrayscale(DGtal::Color &color);
+  double colorToGrayscale(Color_t color);
 
 
 public:
