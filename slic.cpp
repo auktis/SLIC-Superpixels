@@ -36,19 +36,19 @@ void Slic::clear_data()
 }
 
 
-Center_t Slic::toCenterType(const Image2D& image, const DGtal::Z2i::Point& p)
+Center_t Slic::to_center_type(const Image2D& image, const DGtal::Z2i::Point& p)
 {
   Center_t c;
   c.x = p[0];
   c.y = p[1];
-  Color_t cl = getColorAt(image, p[0], p[1]);
+  Color_t cl = get_color_at(image, p[0], p[1]);
   c.color = cl;
   
   return c;
 }
 
 
-Color_t Slic::getColorAt(const Image2D &image, int x, int y)
+Color_t Slic::get_color_at(const Image2D &image, int x, int y)
 {
   Color_t c;
   DGtal::Color color(image(DGtal::Z2i::Point(x, y)), 255);
@@ -62,7 +62,7 @@ Color_t Slic::getColorAt(const Image2D &image, int x, int y)
 /*
  * Convert dgtal:Color to GrayScale
  */
-double Slic::colorToGrayscale(Color_t color)
+double Slic::color_to_grayscale(Color_t color)
 {
   return round(0.299*color.r + 0.587*color.g + 0.114*color.b);
 }
@@ -121,7 +121,7 @@ void Slic::init_data(Image2D& image)
       /* Find the local minimum (gradient-wise). */
       DGtal::Z2i::Point nc = find_local_minimum(image, DGtal::Z2i::Point(i, j));
 
-      center = toCenterType(image, nc);
+      center = to_center_type(image, nc);
 
       /* Append to vector of centers. */
       centers.push_back(center);
@@ -153,7 +153,7 @@ double Slic::compute_dist(int ci, DGtal::Z2i::Point pixel, Color_t color)
 
 
 /*
- * Find a local gradient minimum of a pixel in a 3x3 neighbourhood. This
+ * Find a local gradient minimum of a pixel in a 3x3 neighborhood. This
  * method is called upon initialization of the cluster centers.
  *
  * Input : The image (IplImage*) and the pixel center (CvPoint).
@@ -166,9 +166,9 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
 
   for (int i = center[0] - 1; i < center[0] + 2; i++) {
     for (int j = center[1] - 1; j < center[1] + 2; j++) {
-      Color_t c1 = getColorAt(image, i,   j+1);
-      Color_t c2 = getColorAt(image, i+1, j  );
-      Color_t c3 = getColorAt(image, i,   j  );
+      Color_t c1 = get_color_at(image, i,   j+1);
+      Color_t c2 = get_color_at(image, i+1, j  );
+      Color_t c3 = get_color_at(image, i,   j  );
       /* Convert colour values to grayscale values. */
       double i1 = c1.r;
       double i2 = c2.r;
@@ -228,7 +228,7 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
       for (int k = centers[j].x - step; k < centers[j].x + step; k++) {
         for (int l = centers[j].y - step; l < centers[j].y + step; l++) {
           if (k >= 0 && (size_t)k < imageWidth && l >= 0 && (size_t)l < imageHeight) {
-            Color_t color = getColorAt(image, k, l);
+            Color_t color = get_color_at(image, k, l);
             double d = compute_dist(j, DGtal::Z2i::Point(k, l), color);
 
             /* Update cluster allocation if the cluster minimizes the
@@ -255,7 +255,7 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
         int c_id = clusters[j][k];
 
         if (c_id != -1) {
-          Color_t color = getColorAt(image, j, k);
+          Color_t color = get_color_at(image, j, k);
 
           centers[c_id].color.r += color.r;
           centers[c_id].color.g += color.g;
@@ -459,7 +459,7 @@ void Slic::colour_with_cluster_means(Image2D& image)
   for (size_t i = 0; i < imageWidth; i++) {
     for (size_t j = 0; j < imageHeight; j++) {
       int index = clusters[i][j];
-      Color_t color = getColorAt(image, i, j);
+      Color_t color = get_color_at(image, i, j);
 
       colors[index].r += color.r;
       colors[index].g += color.g;

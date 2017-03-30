@@ -70,7 +70,7 @@ private:
   /* The LAB and xy values of the centers. */
   std::vector<Center_t> centers;
   
-  /* The number of occurences of each center. */
+  /* The number of occurrences of each center. */
   std::vector<int> center_counts;
         
   /* The step size per cluster, and the colour (nc) and distance (ns)
@@ -90,15 +90,17 @@ private:
   /**
    * Helpers 
    */
-  Center_t toCenterType(const Image2D& image, const DGtal::Z2i::Point& p);
-  Color_t getColorAt(const Image2D &image, int x, int y);
+  /* Returns a Center structure set to point p and color at that point. */
+  Center_t to_center_type(const Image2D& image, const DGtal::Z2i::Point& p);
+  /* Returns the color at position (x,y) in the image */
+  Color_t get_color_at(const Image2D &image, int x, int y);
 
   /* Convert dgtal:Color to GrayScale */
-  double colorToGrayscale(Color_t color);
+  double color_to_grayscale(Color_t color);
 
 
 public:
-  /* Class constructors and deconstructors. */
+  /* Class constructors and destructor. */
   Slic();
   ~Slic();
 
