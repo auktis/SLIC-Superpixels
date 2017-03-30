@@ -77,9 +77,8 @@ private:
   void clear_data();
   void init_data(Image2D &image);
   
-  /* Helpers 
-     grayscape = 0.299r + 0.587g + 0.114b.
-   */
+  /* Convert dgtal:Color to GrayScale */
+  double colorToGrayscale(DGtal::Color &color);
 
 public:
   /* Class constructors and deconstructors. */
