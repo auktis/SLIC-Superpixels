@@ -169,10 +169,19 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
       Color_t c1 = getColorAt(image, i,   j+1);
       Color_t c2 = getColorAt(image, i+1, j  );
       Color_t c3 = getColorAt(image, i,   j  );
+
+
       /* Convert colour values to grayscale values. */
-      double i1 = c1.r;
-      double i2 = c2.r;
-      double i3 = c3.r;
+//      double i1 = c1.r;
+//      double i2 = c2.r;
+//      double i3 = c3.r;
+
+      double i1 = colorToGrayscale(c1);
+      double i2 = colorToGrayscale(c2);
+      double i3 = colorToGrayscale(c3);
+
+       //std::cout << c1.r <<" + " << c1.g <<" + "<< c1.b << std::endl;
+      // std::cout <<"i" << i1 <<" + " << i2 <<" + "<< i3 << std::endl;
       /*double i1 = c1.val[0] * 0.11 + c1.val[1] * 0.59 + c1.val[2] * 0.3;
        double i2 = c2.val[0] * 0.11 + c2.val[1] * 0.59 + c2.val[2] * 0.3;
        double i3 = c3.val[0] * 0.11 + c3.val[1] * 0.59 + c3.val[2] * 0.3;*/
