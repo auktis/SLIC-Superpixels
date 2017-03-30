@@ -314,9 +314,9 @@ void Slic::create_connectivity(Image2D& image)
 
         /* Find an adjacent label, for possible use later. */
         for (int k = 0; k < 4; k++) {
-          int x = elements[0][0] + dx4[k], y = elements[0][1] + dy4[k];
+          size_t x = elements[0][0] + dx4[k], y = elements[0][1] + dy4[k];
 
-          if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
+          if (x >= 0 && x < imageWidth && y >= 0 && y < imageHeight) {
             if (new_clusters[x][y] >= 0) {
               adjlabel = new_clusters[x][y];
             }
@@ -327,9 +327,9 @@ void Slic::create_connectivity(Image2D& image)
 
         for (int c = 0; c < count; c++) {
           for (int k = 0; k < 4; k++) {
-            int x = elements[c][0] + dx4[k], y = elements[c][1] + dy4[k];
+            size_t x = elements[c][0] + dx4[k], y = elements[c][1] + dy4[k];
 
-            if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
+            if (x >= 0 && x < imageWidth && y >= 0 && y < imageHeight) {
               if (new_clusters[x][y] == -1 && clusters[i][j] == clusters[x][y]) {
                 elements.push_back(DGtal::Z2i::Point(x, y));
                 new_clusters[x][y] = label;
@@ -406,9 +406,9 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
 
       /* Compare the pixel to its 8 neighbours. */
       for (int k = 0; k < 8; k++) {
-        int x = i + dx8[k], y = j + dy8[k];
+        size_t x = i + dx8[k], y = j + dy8[k];
 
-        if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
+        if (x >= 0 && x < imageWidth && y >= 0 && y < imageHeight) {
           if (istaken[x][y] == false && clusters[i][j] != clusters[x][y]) {
             nr_p += 1;
           }
