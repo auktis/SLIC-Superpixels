@@ -35,6 +35,7 @@ void Slic::clear_data()
   center_counts.clear();
 }
 
+
 Center_t Slic::toCenterType(const Image2D& image, const DGtal::Z2i::Point& p)
 {
   Center_t c;
@@ -45,6 +46,7 @@ Center_t Slic::toCenterType(const Image2D& image, const DGtal::Z2i::Point& p)
   
   return c;
 }
+
 
 Color_t Slic::getColorAt(const Image2D &image, int x, int y)
 {
@@ -57,6 +59,31 @@ Color_t Slic::getColorAt(const Image2D &image, int x, int y)
   return c;
 }
 
+/*
+ * Convert dgtal:Color to GrayScale
+ */
+double Slic::colorToGrayscale(DGtal::Color &color)
+{
+  return round(0.299*color.red() + 0.587*color.green() + 0.114*color.blue());
+}
+
+/*
+ * input: Image2D
+ * output: width of input image
+ */
+unsigned int Slic::get_width(Image2D& image)
+{
+  return 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
+}
+
+/*
+ * input: Image2D
+ * output: height of input image
+ */
+unsigned int Slic::get_height(Image2D& image)
+{
+  return 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+}
 
 
 
@@ -102,18 +129,6 @@ void Slic::init_data(Image2D& image)
     }
   }
 }
-
-
-
-
-/*
- * Convert dgtal:Color to GrayScale
- */
-double Slic::colorToGrayscale(DGtal::Color &color)
-{
-  return round(0.299*color.red() + 0.587*color.green() + 0.114*color.blue());
-}
-
 
 
 
@@ -176,27 +191,6 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
   return loc_min;
 }
 
-
-
-/*
- * input: Image2D
- * output: width of input image
- */
-unsigned int Slic::get_width(Image2D& image)
-{
-  return 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
-}
-
-
-
-/*
- * input: Image2D
- * output: height of input image
- */
-unsigned int Slic::get_height(Image2D& image)
-{
-  return 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
-}
 
 
 /*
