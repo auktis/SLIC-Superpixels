@@ -28,27 +28,12 @@ using namespace std;
 using namespace DGtal;
 namespace po = boost::program_options;
 
-typedef DGtal::ImageContainerBySTLMap<DGtal::Z3i::Domain, unsigned int> Image3D;
 
 struct IdColor {
   Color operator()(const unsigned int& aValue) const {
     return DGtal::Color(aValue);
   }
 };
-
-unsigned int get_depth(Image3D& image)
-{
-  return 1 + image.domain().upperBound()[2] - image.domain().lowerBound()[2];
-}
-unsigned int get_width(Image3D& image)
-{
-  return 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
-}
-unsigned int get_height(Image3D& image)
-{
-  return 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
-}
-
 
 int main(int argc, char** argv)
 {
@@ -91,9 +76,9 @@ int main(int argc, char** argv)
 
 
   Slic slic;
-  unsigned int imageWidth = get_width(image);
-  unsigned int imageHeight = get_height(image);
-  unsigned int imageDepth = get_depth(image);
+  unsigned int imageWidth = slic.get_width(image);
+  unsigned int imageHeight = slic.get_height(image);
+  unsigned int imageDepth = slic.get_depth(image);
   
   cout << imageWidth << " " << imageHeight << " " << imageDepth << endl;
   

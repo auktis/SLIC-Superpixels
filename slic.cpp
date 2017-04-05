@@ -41,7 +41,7 @@ Center_t Slic::to_center_type(const Image3D& image, const DGtal::Z3i::Point& p)
   Center_t c;
   c.x = p[0];
   c.y = p[1];
-  Color_t cl = get_color_at(image, p[0], p[1]);
+  Color_t cl = get_color_at(image, p[0], p[1], p[2]);
   c.color = cl;
   
   return c;
@@ -51,8 +51,7 @@ Center_t Slic::to_center_type(const Image3D& image, const DGtal::Z3i::Point& p)
 Color_t Slic::get_color_at(const Image3D &image, int x, int y, int z)
 {
   Color_t c;
-  DGtal::Color color(image(DGtal::Z3i::Point(x, y)), 255);
-  DGtal::Z3i::Point()
+  DGtal::Color color(image(DGtal::Z3i::Point(x, y, z)), 255);
   c.r = color.red();
   c.g = color.green();
   c.b = color.blue();
@@ -174,32 +173,34 @@ DGtal::Z3i::Point Slic::find_local_minimum(Image3D& image, DGtal::Z3i::Point cen
   double min_grad = std::numeric_limits<double>::max();
   DGtal::Z3i::Point loc_min = center;
 
-  for (int i = center[0] - 1; i < center[0] + 2; i++) {
-    for (int j = center[1] - 1; j < center[1] + 2; j++) {
-      Color_t c1 = get_color_at(image, i,   j+1);
-      Color_t c2 = get_color_at(image, i+1, j  );
-      Color_t c3 = get_color_at(image, i,   j  );
+  for (int i = center[0] - 1; i < center[0] + 3; i++) {
+    for (int j = center[1] - 1; j < center[1] + 3; j++) {
+        for (int k = center[1] - 1; k < center[2] + 3; k++) {
+          Color_t c1 = get_color_at(image, i,   j+1, k+1);
+          Color_t c2 = get_color_at(image, i+1, j, k+1);
+          Color_t c3 = get_color_at(image, i,   j, k);
 
-      /* Convert colour values to grayscale values. */
-      double i1 = c1.r;
-      double i2 = c2.r;
-      double i3 = c3.r;
+          /* Convert colour values to grayscale values. */
+          double i1 = c1.r;
+          double i2 = c2.r;
+          double i3 = c3.r;
 
-//      double i1 = color_to_grayscale(c1);
-//      double i2 = color_to_grayscale(c2);
-//      double i3 = color_to_grayscale(c3);
+  //      double i1 = color_to_grayscale(c1);
+  //      double i2 = color_to_grayscale(c2);
+  //      double i3 = color_to_grayscale(c3);
 
 
-      /* Compute horizontal and vertical gradients and keep track of the
-       minimum. */
-      if (sqrt(pow(i1 - i3, 2)) + sqrt(pow(i2 - i3, 2)) < min_grad) {
-        min_grad = fabs(i1 - i3) + fabs(i2 - i3);
-        loc_min[0] = i;
-        loc_min[1] = j;
+        /* Compute horizontal and vertical gradients and keep track of the
+         minimum. */
+        if (sqrt(pow(i1 - i3, 2)) + sqrt(pow(i2 - i3, 2)) < min_grad) {
+          min_grad = fabs(i1 - i3) + fabs(i2 - i3);
+          loc_min[0] = i;
+          loc_min[1] = j;
+          loc_min[2] = k;
       }
     }
   }
-
+}
 
   return loc_min;
 }
@@ -221,17 +222,20 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
 
   unsigned int imageWidth = get_width(image);
   unsigned int imageHeight = get_height(image);
+  unsigned int imageDepth = get_depth(image);
 
   /* Clear previous data (if any), and re-initialize it. */
   clear_data();
   init_data(image);
 
   /* Run EM for 10 iterations (as prescribed by the algorithm). */
-  for (int i = 0; i < NR_ITERATIONS; i++) {
+  for (int i = 0; l < NR_ITERATIONS; l++) {
     /* Reset distance values. */
-    for (size_t j = 0; j < imageWidth; j++) {
-      for (size_t k = 0; k < imageHeight; k++) {
-        distances[j][k] = std::numeric_limits<double>::max();
+    for (size_t i = 0; i < imageWidth; i++) {
+      for (size_t j = 0; j < imageHeight; j++) {
+        for (size_t k = 0; k < imageHeight; k++) {
+          distances[i][j][k] = std::numeric_limits<double>::max();
+        }
       }
     }
 
@@ -240,16 +244,17 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
       /* Only compare to pixels in a 2 x step by 2 x step region. */
       for (int k = centers[j].x - step; k < centers[j].x + step; k++) {
         for (int l = centers[j].y - step; l < centers[j].y + step; l++) {
-          if (k >= 0 && (size_t)k < imageWidth && l >= 0 && (size_t)l < imageHeight) {
-            Color_t color = get_color_at(image, k, l);
-            double d = compute_dist(j, DGtal::Z3i::Point(k, l), color);
+          for (int m = centers[j].z - step; m < centers[j].z + step; m++) {
+            if (k >= 0 && (size_t)k < imageWidth && l >= 0 && (size_t)l < imageHeight && m >= 0 && (size_t)m < imageDepth) {
+              Color_t color = get_color_at(image, k, l, m);
+              double d = compute_dist(j, DGtal::Z3i::Point(k, l, m), color);
 
-            /* Update cluster allocation if the cluster minimizes the
-               distance. */
-            if (d < distances[k][l]) {
-              distances[k][l] = d;
-              clusters[k][l] = j;
-            }
+              /* Update cluster allocation if the cluster minimizes the
+                 distance. */
+              if (d < distances[k][l][m]) {
+                distances[k][l][m] = d;
+                clusters[k][l][m] = j;
+              }
           }
         }
       }
@@ -257,7 +262,7 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
 
     /* Clear the center values. */
     for (size_t j = 0; j < centers.size(); j++) {
-      centers[j].x = centers[j].y = 0;
+      centers[j].x = centers[j].y = centers[j].z= 0;
       centers[j].color.r = centers[j].color.g = centers[j].color.b = 0;
       center_counts[j] = 0;
     }
@@ -265,18 +270,21 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
     /* Compute the new cluster centers. */
     for (size_t j = 0; j < imageWidth; j++) {
       for (size_t k = 0; k < imageHeight; k++) {
-        int c_id = clusters[j][k];
+        for (size_t l = 0; l < imageDepth; l++) {
+          int c_id = clusters[j][k][l];
 
-        if (c_id != -1) {
-          Color_t color = get_color_at(image, j, k);
+          if (c_id != -1) {
+            Color_t color = get_color_at(image, j, k, m);
 
-          centers[c_id].color.r += color.r;
-          centers[c_id].color.g += color.g;
-          centers[c_id].color.b += color.b;
-          centers[c_id].x += j;
-          centers[c_id].y += k;
-          
-          center_counts[c_id] += 1;
+            centers[c_id].color.r += color.r;
+            centers[c_id].color.g += color.g;
+            centers[c_id].color.b += color.b;
+            centers[c_id].x += j;
+            centers[c_id].y += k;
+            centers[c_id].z += z;
+
+            center_counts[c_id] += 1;
+          }
         }
       }
     }
@@ -288,6 +296,7 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
       centers[j].color.b /= center_counts[j];
       centers[j].x /= center_counts[j];
       centers[j].y /= center_counts[j];
+      centers[j].z /= center_counts[j];
     }
   }
 }
