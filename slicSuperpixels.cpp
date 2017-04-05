@@ -14,6 +14,7 @@
 #include "DGtal/base/Common.h"
 #include "DGtal/helpers/StdDefs.h"
 #include <DGtal/io/readers/GenericReader.h>
+#include <DGtal/io/readers/VolReader.h>
 #include <DGtal/io/writers/GenericWriter.h>
 #include "DGtal/io/writers/PPMWriter.h"
 
@@ -27,6 +28,7 @@ using namespace std;
 using namespace DGtal;
 namespace po = boost::program_options;
 
+typedef DGtal::ImageContainerBySTLMap<DGtal::Z3i::Domain, unsigned int> Image3D;
 
 struct IdColor {
   Color operator()(const unsigned int& aValue) const {
@@ -34,6 +36,18 @@ struct IdColor {
   }
 };
 
+unsigned int get_depth(Image3D& image)
+{
+  return 1 + image.domain().upperBound()[2] - image.domain().lowerBound()[2];
+}
+unsigned int get_width(Image3D& image)
+{
+  return 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
+}
+unsigned int get_height(Image3D& image)
+{
+  return 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+}
 
 
 int main(int argc, char** argv)
@@ -73,12 +87,16 @@ int main(int argc, char** argv)
 
   string nameImage = vm["input"].as<string>();
   string nameImageOutput = vm["output"].as<string>();
-  Image2D image = GenericReader<Image2D>::import(nameImage);
-  
-  
+  Image3D image = VolReader<Image3D>::importVol(nameImage);
+
+
   Slic slic;
-  unsigned int imageWidth = slic.get_width(image);
-  unsigned int imageHeight = slic.get_height(image);
+  unsigned int imageWidth = get_width(image);
+  unsigned int imageHeight = get_height(image);
+  unsigned int imageDepth = get_depth(image);
+  
+  cout << imageWidth << " " << imageHeight << " " << imageDepth << endl;
+  
   
 //  for (size_t i = 0; i < imageWidth; i++) {
 //    for (size_t j = 0; j < imageHeight; j++) {
@@ -88,31 +106,31 @@ int main(int argc, char** argv)
 //    std::cout << std::endl;
 //  }
 
-  int nr = vm["n"].as<int>();
-  int nc = vm["w"].as<int>();
-  double step = sqrt((imageWidth * imageHeight) / (double) nr);
-
-  /* Perform the SLIC superpixel algorithm. */
-
-  slic.generate_superpixels(image, step, nc);
-  slic.create_connectivity(image);
-  DGtal::Color c(0, 0, 204);
-  DGtal::Color c2(255, 100, 50);
-
-  if (!vm.count("noDisplayContour")) {
-    slic.display_contours(image, c);
-  }
-
-  if (vm.count("displayMeanColor")) {
-    slic.colour_with_cluster_means(image);
-  }
-
-  if (vm.count("displayCenters")) {
-    slic.display_center_grid(image, c2);
-  }
-
-  IdColor id;
-  PPMWriter<Image2D, IdColor >::exportPPM(nameImageOutput, image, id);
+//  int nr = vm["n"].as<int>();
+//  int nc = vm["w"].as<int>();
+//  double step = sqrt((imageWidth * imageHeight) / (double) nr);
+//
+//  /* Perform the SLIC superpixel algorithm. */
+//
+//  slic.generate_superpixels(image, step, nc);
+//  slic.create_connectivity(image);
+//  DGtal::Color c(0, 0, 204);
+//  DGtal::Color c2(255, 100, 50);
+//
+//  if (!vm.count("noDisplayContour")) {
+//    slic.display_contours(image, c);
+//  }
+//
+//  if (vm.count("displayMeanColor")) {
+//    slic.colour_with_cluster_means(image);
+//  }
+//
+//  if (vm.count("displayCenters")) {
+//    slic.display_center_grid(image, c2);
+//  }
+//
+//  IdColor id;
+//  PPMWriter<Image2D, IdColor >::exportPPM(nameImageOutput, image, id);
 
 
   return 1;
