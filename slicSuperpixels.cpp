@@ -16,7 +16,7 @@
 #include <DGtal/io/readers/GenericReader.h>
 #include <DGtal/io/readers/VolReader.h>
 #include <DGtal/io/writers/GenericWriter.h>
-#include "DGtal/io/writers/PPMWriter.h"
+#include "DGtal/io/writers/VolWriter.h"
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -91,32 +91,32 @@ int main(int argc, char** argv)
 //    std::cout << std::endl;
 //  }
 
-//  int nr = vm["n"].as<int>();
-//  int nc = vm["w"].as<int>();
-//  double step = sqrt((imageWidth * imageHeight) / (double) nr);
-//
-//  /* Perform the SLIC superpixel algorithm. */
-//
-//  slic.generate_superpixels(image, step, nc);
-//  slic.create_connectivity(image);
-//  DGtal::Color c(0, 0, 204);
-//  DGtal::Color c2(255, 100, 50);
-//
-//  if (!vm.count("noDisplayContour")) {
-//    slic.display_contours(image, c);
-//  }
-//
-//  if (vm.count("displayMeanColor")) {
-//    slic.colour_with_cluster_means(image);
-//  }
-//
-//  if (vm.count("displayCenters")) {
-//    slic.display_center_grid(image, c2);
-//  }
-//
-//  IdColor id;
-//  PPMWriter<Image2D, IdColor >::exportPPM(nameImageOutput, image, id);
+  int nr = vm["n"].as<int>();
+  int nc = vm["w"].as<int>();
+  double step = sqrt((imageWidth * imageHeight * imageDepth) / (double) nr);
 
+  /* Perform the SLIC superpixel algorithm. */
 
+  slic.generate_superpixels(image, step, nc);
+  slic.create_connectivity(image);
+  DGtal::Color c(0, 0, 204);
+  DGtal::Color c2(255, 100, 50);
+
+  if (!vm.count("noDisplayContour")) {
+    slic.display_contours(image, c);
+  }
+
+  if (vm.count("displayMeanColor")) {
+    slic.colour_with_cluster_means(image);
+  }
+
+  if (vm.count("displayCenters")) {
+    slic.display_center_grid(image, c2);
+  }
+
+  IdColor id;
+  VolWriter<Image3D, IdColor>::exportVol(nameImageOutput, image, id);
+
+  
   return 1;
 }

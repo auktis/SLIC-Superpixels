@@ -41,6 +41,8 @@ Center_t Slic::to_center_type(const Image3D& image, const DGtal::Z3i::Point& p)
   Center_t c;
   c.x = p[0];
   c.y = p[1];
+  c.z = p[2];
+
   Color_t cl = get_color_at(image, p[0], p[1], p[2]);
   c.color = cl;
   
@@ -107,6 +109,7 @@ void Slic::init_data(Image3D& image)
 {
   unsigned int imageWidth = get_width(image);
   unsigned int imageHeight = get_height(image);
+  unsigned int imageDepth = get_depth(image);
 
   /* Initialize the cluster and distance matrices. */
   for (size_t i = 0; i < imageWidth; i++) {
@@ -114,8 +117,16 @@ void Slic::init_data(Image3D& image)
     std::vector<double> dist_row;
 
     for (size_t j = 0; j < imageHeight; j++) {
-      cluster_row.push_back(-1);
-      dist_row.push_back(std::numeric_limits<double>::max());
+      std::vector<int> cluster_aisle;
+      std::vector<double> dist_aisle;
+      
+      for (size_t k = 0; k < imageDepth; k++) {
+        cluster_aisle.push_back(-1);
+        dist_aisle.push_back(std::numeric_limits<double>::max());
+      }
+      
+      cluster_row.push_back(cluster_aisle);
+      dist_row.push_back(dist_aisle);
     }
 
     clusters.push_back(cluster_row);
@@ -126,15 +137,17 @@ void Slic::init_data(Image3D& image)
   /* Initialize the centers and counters. */
   for (size_t i = step; i < imageWidth - step / 2; i += step) {
     for (size_t j = step; j < imageHeight - step / 2; j += step) {
-      Center_t center;
-      /* Find the local minimum (gradient-wise). */
-      DGtal::Z3i::Point nc = find_local_minimum(image, DGtal::Z3i::Point(i, j));
+      for (size_t k = step; k < imageDepth - step / 2; k += step) {
+        Center_t center;
+        /* Find the local minimum (gradient-wise). */
+        DGtal::Z3i::Point nc = find_local_minimum(image, DGtal::Z3i::Point(i, j, k));
 
-      center = to_center_type(image, nc);
+        center = to_center_type(image, nc);
 
-      /* Append to vector of centers. */
-      centers.push_back(center);
-      center_counts.push_back(0);
+        /* Append to vector of centers. */
+        centers.push_back(center);
+        center_counts.push_back(0);
+      }
     }
   }
 }
@@ -153,7 +166,9 @@ double Slic::compute_dist(int ci, DGtal::Z3i::Point pixel, Color_t color)
   double dc = sqrt(pow(centers[ci].color.r - color.r, 2) 
                  + pow(centers[ci].color.g - color.g, 2) 
                  + pow(centers[ci].color.b - color.b, 2));
-  double ds = sqrt(pow(centers[ci].x - pixel[0], 2) + pow(centers[ci].y - pixel[1], 2));
+  double ds = sqrt(pow(centers[ci].x - pixel[0], 2) 
+                 + pow(centers[ci].y - pixel[1], 2)
+                 + pow(centers[ci].z - pixel[2], 2));
 
   return sqrt(pow(dc / nc, 2) + pow(ds / ns, 2));
 }
@@ -324,7 +339,7 @@ void Slic::create_connectivity(Image3D& image)
   const int dy4[4] = { 0 , -1,  0,  1};
 
   /* Initialize the new cluster matrix. */
-  vec2di new_clusters;
+  vec3di new_clusters;
 
   for (size_t i = 0; i < imageWidth; i++) {
     std::vector<int> nc;
@@ -417,7 +432,7 @@ void Slic::display_contours(Image3D& image, DGtal::Color& colour)
   /* Initialize the contour vector and the matrix detailing whether a pixel
    * is already taken to be a contour. */
   std::vector<DGtal::Z3i::Point> contours;
-  vec2db istaken;
+  vec3db istaken;
 
   for (size_t i = 0; i < imageWidth; i++) {
     std::vector<bool> nb;

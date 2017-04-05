@@ -31,9 +31,9 @@ typedef struct Center_st {
 } Center_t;
 
 
-typedef std::vector<std::vector<double> > vec2dd;
-typedef std::vector<std::vector<int> >    vec2di;
-typedef std::vector<std::vector<bool> >   vec2db;
+typedef std::vector<std::vector<std::vector<double> > > vec3dd;
+typedef std::vector<std::vector<std::vector<int>> >    vec3di;
+typedef std::vector<std::vector<std::vector<bool>> >   vec3db;
 
 
 typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain, unsigned int> Image3D;
@@ -43,8 +43,8 @@ class Slic {
   
 private:
   /* The cluster assignments and distance values for each pixel. */
-  vec2di clusters;
-  vec2dd distances;
+  vec3di clusters;
+  vec3dd distances;
         
   /* The LAB and xy values of the centers. */
   std::vector<Center_t> centers;
