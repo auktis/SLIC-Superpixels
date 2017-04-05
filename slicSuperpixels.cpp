@@ -115,7 +115,7 @@ int main(int argc, char** argv)
   }
 
   IdColor id;
-  VolWriter<Image3D, IdColor>::exportVol(nameImageOutput, image, id);
+  //VolWriter<Image3D, IdColor>::exportVol(nameImageOutput, image, id);
 
   
   return 1;

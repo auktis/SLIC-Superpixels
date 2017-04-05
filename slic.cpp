@@ -270,50 +270,50 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
                 distances[k][l][m] = d;
                 clusters[k][l][m] = j;
               }
+            }
           }
         }
       }
-    }
 
-    /* Clear the center values. */
-    for (size_t j = 0; j < centers.size(); j++) {
-      centers[j].x = centers[j].y = centers[j].z= 0;
-      centers[j].color.r = centers[j].color.g = centers[j].color.b = 0;
-      center_counts[j] = 0;
-    }
+      /* Clear the center values. */
+      for (size_t j = 0; j < centers.size(); j++) {
+        centers[j].x = centers[j].y = centers[j].z= 0;
+        centers[j].color.r = centers[j].color.g = centers[j].color.b = 0;
+        center_counts[j] = 0;
+      }
 
-    /* Compute the new cluster centers. */
-    for (size_t j = 0; j < imageWidth; j++) {
-      for (size_t k = 0; k < imageHeight; k++) {
-        for (size_t l = 0; l < imageDepth; l++) {
-          int c_id = clusters[j][k][l];
+      /* Compute the new cluster centers. */
+      for (size_t j = 0; j < imageWidth; j++) {
+        for (size_t k = 0; k < imageHeight; k++) {
+          for (size_t l = 0; l < imageDepth; l++) {
+            int c_id = clusters[j][k][l];
 
-          if (c_id != -1) {
-            Color_t color = get_color_at(image, j, k, m);
+            if (c_id != -1) {
+              Color_t color = get_color_at(image, j, k, m);
 
-            centers[c_id].color.r += color.r;
-            centers[c_id].color.g += color.g;
-            centers[c_id].color.b += color.b;
-            centers[c_id].x += j;
-            centers[c_id].y += k;
-            centers[c_id].z += z;
+              centers[c_id].color.r += color.r;
+              centers[c_id].color.g += color.g;
+              centers[c_id].color.b += color.b;
+              centers[c_id].x += j;
+              centers[c_id].y += k;
+              centers[c_id].z += z;
 
-            center_counts[c_id] += 1;
+              center_counts[c_id] += 1;
+            }
           }
         }
       }
-    }
 
-    /* Normalize the clusters. */
-    for (size_t j = 0; j < centers.size(); j++) {
-      centers[j].color.r /= center_counts[j];
-      centers[j].color.g /= center_counts[j];
-      centers[j].color.b /= center_counts[j];
-      centers[j].x /= center_counts[j];
-      centers[j].y /= center_counts[j];
-      centers[j].z /= center_counts[j];
+      /* Normalize the clusters. */
+      for (size_t j = 0; j < centers.size(); j++) {
+        centers[j].color.r /= center_counts[j];
+        centers[j].color.g /= center_counts[j];
+        centers[j].color.b /= center_counts[j];
+        centers[j].x /= center_counts[j];
+        centers[j].y /= center_counts[j];
+        centers[j].z /= center_counts[j];
+      }
     }
-  }
 }
 
 
