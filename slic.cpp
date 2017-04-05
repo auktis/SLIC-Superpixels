@@ -113,8 +113,8 @@ void Slic::init_data(Image3D& image)
 
   /* Initialize the cluster and distance matrices. */
   for (size_t i = 0; i < imageWidth; i++) {
-    std::vector<int> cluster_row;
-    std::vector<double> dist_row;
+    std::vector<std::vector<int> > cluster_row;
+    std::vector<std::vector<double> > dist_row;
 
     for (size_t j = 0; j < imageHeight; j++) {
       std::vector<int> cluster_aisle;
@@ -244,7 +244,7 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
   init_data(image);
 
   /* Run EM for 10 iterations (as prescribed by the algorithm). */
-  for (int i = 0; l < NR_ITERATIONS; l++) {
+  for (int l = 0; l < NR_ITERATIONS; l++) {
     /* Reset distance values. */
     for (size_t i = 0; i < imageWidth; i++) {
       for (size_t j = 0; j < imageHeight; j++) {
@@ -289,14 +289,14 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
           int c_id = clusters[j][k][l];
 
           if (c_id != -1) {
-            Color_t color = get_color_at(image, j, k, m);
+            Color_t color = get_color_at(image, j, k, l);
 
             centers[c_id].color.r += color.r;
             centers[c_id].color.g += color.g;
             centers[c_id].color.b += color.b;
             centers[c_id].x += j;
             centers[c_id].y += k;
-            centers[c_id].z += z;
+            centers[c_id].z += l;
 
             center_counts[c_id] += 1;
           }
@@ -315,7 +315,7 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
     }
   }
 }
-
+}
 
 
 
