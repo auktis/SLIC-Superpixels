@@ -26,7 +26,7 @@ typedef struct Color_st {
 } Color_t;
 
 typedef struct Center_st {
-    double x, y;
+    double x, y, z;
     Color_t color;
 } Center_t;
 
@@ -36,7 +36,7 @@ typedef std::vector<std::vector<int> >    vec2di;
 typedef std::vector<std::vector<bool> >   vec2db;
 
 
-typedef DGtal::ImageContainerBySTLVector<DGtal::Z2i::Domain, unsigned int> Image2D;
+typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain, unsigned int> Image3D;
 
 
 class Slic {
@@ -57,22 +57,22 @@ private:
   int step, nc, ns;
         
   /* Compute the distance between a center and an individual pixel. */
-  double compute_dist(int ci, DGtal::Z2i::Point pixel, Color_t color);
+  double compute_dist(int ci, DGtal::Z3i::Point pixel, Color_t color);
   /* Find the pixel with the lowest gradient in a 3x3 surrounding. */
-  DGtal::Z2i::Point find_local_minimum(Image2D &image, DGtal::Z2i::Point center);
+  DGtal::Z3i::Point find_local_minimum(Image3D &image, DGtal::Z3i::Point center);
         
-  /* Remove and initialize the 2d vectors. */
+  /* Remove and initialize the 3d vectors. */
   void clear_data();
-  void init_data(Image2D &image);
+  void init_data(Image3D &image);
   
 public:
   /**
    * Helpers 
    */
   /* Returns a Center structure set to point p and color at that point. */
-  Center_t to_center_type(const Image2D& image, const DGtal::Z2i::Point& p);
+  Center_t to_center_type(const Image3D& image, const DGtal::Z3i::Point& p);
   /* Returns the color at position (x,y) in the image */
-  Color_t get_color_at(const Image2D &image, int x, int y);
+  Color_t get_color_at(const Image3D &image, int x, int y, int z);
 
   /* Convert dgtal:Color to GrayScale */
   double color_to_grayscale(Color_t color);
@@ -84,20 +84,23 @@ public:
   ~Slic();
 
   /*return width of picture*/
-  unsigned int get_width(Image2D &);
+  unsigned int get_width(Image3D &);
 
   /*return height of picture*/
-  unsigned int get_height(Image2D &);
+  unsigned int get_height(Image3D &);
+
+  /*return depth of picture*/
+  unsigned int get_depth(Image3D &);
 
   /* Generate an over-segmentation for an image. */
-  void generate_superpixels(Image2D &, int step, int nc);
+  void generate_superpixels(Image3D &, int step, int nc);
   /* Enforce connectivity for an image. */
-  void create_connectivity(Image2D &image);
+  void create_connectivity(Image3D &image);
         
   /* Draw functions. Resp. displayal of the centers and the contours. */
-  void display_center_grid( Image2D &image, DGtal::Color &colour);
-  void display_contours( Image2D &image, DGtal::Color &colour);
-  void colour_with_cluster_means(Image2D &image);
+  void display_center_grid( Image3D &image, DGtal::Color &colour);
+  void display_contours( Image3D &image, DGtal::Color &colour);
+  void colour_with_cluster_means(Image3D &image);
 };
 
 #endif
