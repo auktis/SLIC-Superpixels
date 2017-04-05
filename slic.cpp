@@ -36,7 +36,7 @@ void Slic::clear_data()
 }
 
 
-Center_t Slic::to_center_type(const Image2D& image, const DGtal::Z2i::Point& p)
+Center_t Slic::to_center_type(const Image3D& image, const DGtal::Z3i::Point& p)
 {
   Center_t c;
   c.x = p[0];
@@ -48,10 +48,11 @@ Center_t Slic::to_center_type(const Image2D& image, const DGtal::Z2i::Point& p)
 }
 
 
-Color_t Slic::get_color_at(const Image2D &image, int x, int y)
+Color_t Slic::get_color_at(const Image3D &image, int x, int y, int z)
 {
   Color_t c;
-  DGtal::Color color(image(DGtal::Z2i::Point(x, y)), 255);
+  DGtal::Color color(image(DGtal::Z3i::Point(x, y)), 255);
+  DGtal::Z3i::Point()
   c.r = color.red();
   c.g = color.green();
   c.b = color.blue();
@@ -68,21 +69,30 @@ double Slic::color_to_grayscale(Color_t color)
 }
 
 /*
- * input: Image2D
+ * input: Image3D
  * output: width of input image
  */
-unsigned int Slic::get_width(Image2D& image)
+unsigned int Slic::get_width(Image3D& image)
 {
   return 1 + image.domain().upperBound()[0] - image.domain().lowerBound()[0];
 }
 
 /*
- * input: Image2D
+ * input: Image3D
  * output: height of input image
  */
-unsigned int Slic::get_height(Image2D& image)
+unsigned int Slic::get_height(Image3D& image)
 {
   return 1 + image.domain().upperBound()[1] - image.domain().lowerBound()[1];
+}
+
+/*
+ * input: Image3D
+ * output: depth of input image
+ */
+unsigned int Slic::get_depth(Image3D& image)
+{
+  return 1 + image.domain().upperBound()[2] - image.domain().lowerBound()[2];
 }
 
 
@@ -94,7 +104,7 @@ unsigned int Slic::get_height(Image2D& image)
  * Input : The image (IplImage*).
  * Output: -
  */
-void Slic::init_data(Image2D& image)
+void Slic::init_data(Image3D& image)
 {
   unsigned int imageWidth = get_width(image);
   unsigned int imageHeight = get_height(image);
@@ -119,7 +129,7 @@ void Slic::init_data(Image2D& image)
     for (size_t j = step; j < imageHeight - step / 2; j += step) {
       Center_t center;
       /* Find the local minimum (gradient-wise). */
-      DGtal::Z2i::Point nc = find_local_minimum(image, DGtal::Z2i::Point(i, j));
+      DGtal::Z3i::Point nc = find_local_minimum(image, DGtal::Z3i::Point(i, j));
 
       center = to_center_type(image, nc);
 
@@ -139,7 +149,7 @@ void Slic::init_data(Image2D& image)
  *         the pixel (CvScalar).
  * Output: The distance (double).
  */
-double Slic::compute_dist(int ci, DGtal::Z2i::Point pixel, Color_t color)
+double Slic::compute_dist(int ci, DGtal::Z3i::Point pixel, Color_t color)
 {
   double dc = sqrt(pow(centers[ci].color.r - color.r, 2) 
                  + pow(centers[ci].color.g - color.g, 2) 
@@ -159,10 +169,10 @@ double Slic::compute_dist(int ci, DGtal::Z2i::Point pixel, Color_t color)
  * Input : The image (IplImage*) and the pixel center (CvPoint).
  * Output: The local gradient minimum (CvPoint).
  */
-DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point center)
+DGtal::Z3i::Point Slic::find_local_minimum(Image3D& image, DGtal::Z3i::Point center)
 {
   double min_grad = std::numeric_limits<double>::max();
-  DGtal::Z2i::Point loc_min = center;
+  DGtal::Z3i::Point loc_min = center;
 
   for (int i = center[0] - 1; i < center[0] + 2; i++) {
     for (int j = center[1] - 1; j < center[1] + 2; j++) {
@@ -203,7 +213,7 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
  * Input : The Lab image (IplImage*), the stepsize (int), and the weight (int).
  * Output: -
  */
-void Slic::generate_superpixels(Image2D& image, int step, int nc)
+void Slic::generate_superpixels(Image3D& image, int step, int nc)
 {
   this->step = step;
   this->nc = nc;
@@ -232,7 +242,7 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
         for (int l = centers[j].y - step; l < centers[j].y + step; l++) {
           if (k >= 0 && (size_t)k < imageWidth && l >= 0 && (size_t)l < imageHeight) {
             Color_t color = get_color_at(image, k, l);
-            double d = compute_dist(j, DGtal::Z2i::Point(k, l), color);
+            double d = compute_dist(j, DGtal::Z3i::Point(k, l), color);
 
             /* Update cluster allocation if the cluster minimizes the
                distance. */
@@ -290,10 +300,10 @@ void Slic::generate_superpixels(Image2D& image, int step, int nc)
  * in the paper, but forms an active part of the implementation of the authors
  * of the paper.
  *
- * Input : The image (Image2D&).
+ * Input : The image (Image3D&).
  * Output: -
  */
-void Slic::create_connectivity(Image2D& image)
+void Slic::create_connectivity(Image3D& image)
 {
   int label = 0, adjlabel = 0;
   unsigned int imageWidth = get_width(image);
@@ -320,8 +330,8 @@ void Slic::create_connectivity(Image2D& image)
   for (size_t i = 0; i < imageWidth; i++) {
     for (size_t j = 0; j < imageHeight; j++) {
       if (new_clusters[i][j] == -1) {
-        std::vector<DGtal::Z2i::Point> elements;
-        elements.push_back(DGtal::Z2i::Point(i, j));
+        std::vector<DGtal::Z3i::Point> elements;
+        elements.push_back(DGtal::Z3i::Point(i, j));
 
         /* Find an adjacent label, for possible use later. */
         for (int k = 0; k < 4; k++) {
@@ -342,7 +352,7 @@ void Slic::create_connectivity(Image2D& image)
 
             if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
               if (new_clusters[x][y] == -1 && clusters[i][j] == clusters[x][y]) {
-                elements.push_back(DGtal::Z2i::Point(x, y));
+                elements.push_back(DGtal::Z3i::Point(x, y));
                 new_clusters[x][y] = label;
                 count += 1;
               }
@@ -374,10 +384,10 @@ void Slic::create_connectivity(Image2D& image)
  * Input : The image to display upon (IplImage*) and the colour (CvScalar).
  * Output: -
  */
-void Slic::display_center_grid(Image2D& image, DGtal::Color& colour)
+void Slic::display_center_grid(Image3D& image, DGtal::Color& colour)
 {
   for (size_t i = 0; i < centers.size(); i++) {
-    image.setValue(DGtal::Z2i::Point(centers[i].x, centers[i].y), colour.getRGB());
+    image.setValue(DGtal::Z3i::Point(centers[i].x, centers[i].y), colour.getRGB());
   }
 }
 
@@ -388,7 +398,7 @@ void Slic::display_center_grid(Image2D& image, DGtal::Color& colour)
  * Input : The target image (IplImage*) and contour colour (CvScalar).
  * Output: -
  */
-void Slic::display_contours(Image2D& image, DGtal::Color& colour)
+void Slic::display_contours(Image3D& image, DGtal::Color& colour)
 {
   const int dx8[8] = { -1, -1,  0,  1, 1, 1, 0, -1};
   const int dy8[8] = { 0, -1, -1, -1, 0, 1, 1,  1};
@@ -397,7 +407,7 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
 
   /* Initialize the contour vector and the matrix detailing whether a pixel
    * is already taken to be a contour. */
-  std::vector<DGtal::Z2i::Point> contours;
+  std::vector<DGtal::Z3i::Point> contours;
   vec2db istaken;
 
   for (size_t i = 0; i < imageWidth; i++) {
@@ -428,7 +438,7 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
 
       /* Add the pixel to the contour list if desired. */
       if (nr_p >= 2) {
-        contours.push_back(DGtal::Z2i::Point(i, j));
+        contours.push_back(DGtal::Z3i::Point(i, j));
         istaken[i][j] = true;
       }
     }
@@ -436,7 +446,7 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
 
   /* Draw the contour pixels. */
   for (size_t i = 0; i < contours.size(); i++) {
-    image.setValue(DGtal::Z2i::Point(contours[i][0], contours[i][1]), colour.getRGB());
+    image.setValue(DGtal::Z3i::Point(contours[i][0], contours[i][1]), colour.getRGB());
 
   }
 }
@@ -452,7 +462,7 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
  * Input : The target image (IplImage*).
  * Output: -
  */
-void Slic::colour_with_cluster_means(Image2D& image)
+void Slic::colour_with_cluster_means(Image3D& image)
 {
   std::vector<Color_t> colors(centers.size());
   unsigned int imageWidth = get_width(image);
@@ -483,7 +493,7 @@ void Slic::colour_with_cluster_means(Image2D& image)
       DGtal::Color col;
       Color_t ncolor = colors[clusters[i][j]];
       col.setRGBf(ncolor.r / 255.0, ncolor.g / 255.0, ncolor.b / 255.0 );
-      image.setValue(DGtal::Z2i::Point(i, j), col.getRGB());
+      image.setValue(DGtal::Z3i::Point(i, j), col.getRGB());
     }
   }
 }
