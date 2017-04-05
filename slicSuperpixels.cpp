@@ -23,10 +23,9 @@
 
 #include "slic.h"
 
-
+using namespace std;
 using namespace DGtal;
 namespace po = boost::program_options;
-
 
 
 struct IdColor {
@@ -37,8 +36,7 @@ struct IdColor {
 
 
 
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 
   po::options_description general_opt("Allowed options are: ");
@@ -73,13 +71,22 @@ main(int argc, char** argv)
 
 
 
-  std::string nameImage = vm["input"].as<std::string>();
-  std::string nameImageOutput = vm["output"].as<std::string>();
+  string nameImage = vm["input"].as<string>();
+  string nameImageOutput = vm["output"].as<string>();
   Image2D image = GenericReader<Image2D>::import(nameImage);
-
+  
+  
   Slic slic;
   unsigned int imageWidth = slic.get_width(image);
   unsigned int imageHeight = slic.get_height(image);
+  
+//  for (size_t i = 0; i < imageWidth; i++) {
+//    for (size_t j = 0; j < imageHeight; j++) {
+//      Color_t c = slic.get_color_at(image, i, j);
+//      std::cout << c.r << " " << c.g << " "<< c.b << " | ";
+//    }
+//    std::cout << std::endl;
+//  }
 
   int nr = vm["n"].as<int>();
   int nc = vm["w"].as<int>();

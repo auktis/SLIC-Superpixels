@@ -19,27 +19,6 @@
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/images/ImageContainerBySTLVector.h"
 
-
-//typedef struct CvScalar {
-//  double val[4];
-//} CvScalar;
-//
-//
-//
-//typedef struct ToCvScalarFct{
-//  inline
-//  CvScalar operator() (unsigned int aVal) const
-//  {
-//    CvScalar result;
-//    DGtal::Color c (aVal, 255);
-//    result.val[0] = (double)(c.red());
-//    result.val[1] = (double)(c.green());
-//    result.val[2] = (double)(c.blue());
-//    return result;
-//  }
-//  
-//} ToCvScalarFct;
-
 #define NR_ITERATIONS 10
 
 typedef struct Color_st {
@@ -86,7 +65,7 @@ private:
   void clear_data();
   void init_data(Image2D &image);
   
-
+public:
   /**
    * Helpers 
    */
@@ -99,7 +78,7 @@ private:
   double color_to_grayscale(Color_t color);
 
 
-public:
+
   /* Class constructors and destructor. */
   Slic();
   ~Slic();

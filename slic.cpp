@@ -60,7 +60,7 @@ Color_t Slic::get_color_at(const Image2D &image, int x, int y)
 }
 
 /*
- * Convert dgtal:Color to GrayScale
+ * Converts to GrayScale
  */
 double Slic::color_to_grayscale(Color_t color)
 {
@@ -171,19 +171,14 @@ DGtal::Z2i::Point Slic::find_local_minimum(Image2D& image, DGtal::Z2i::Point cen
       Color_t c3 = get_color_at(image, i,   j  );
 
       /* Convert colour values to grayscale values. */
-//      double i1 = c1.r;
-//      double i2 = c2.r;
-//      double i3 = c3.r;
+      double i1 = c1.r;
+      double i2 = c2.r;
+      double i3 = c3.r;
 
-      double i1 = color_to_grayscale(c1);
-      double i2 = color_to_grayscale(c2);
-      double i3 = color_to_grayscale(c3);
+//      double i1 = color_to_grayscale(c1);
+//      double i2 = color_to_grayscale(c2);
+//      double i3 = color_to_grayscale(c3);
 
-       //std::cout << c1.r <<" + " << c1.g <<" + "<< c1.b << std::endl;
-      // std::cout <<"i" << i1 <<" + " << i2 <<" + "<< i3 << std::endl;
-      /*double i1 = c1.val[0] * 0.11 + c1.val[1] * 0.59 + c1.val[2] * 0.3;
-       double i2 = c2.val[0] * 0.11 + c2.val[1] * 0.59 + c2.val[2] * 0.3;
-       double i3 = c3.val[0] * 0.11 + c3.val[1] * 0.59 + c3.val[2] * 0.3;*/
 
       /* Compute horizontal and vertical gradients and keep track of the
        minimum. */
@@ -420,7 +415,7 @@ void Slic::display_contours(Image2D& image, DGtal::Color& colour)
     for (size_t j = 0; j < imageHeight; j++) {
       int nr_p = 0;
 
-      /* Compare the pixel to its 8 neighbours. */
+      /* Compare the pixel to its 8 neighbors. */
       for (int k = 0; k < 8; k++) {
         int x = i + dx8[k], y = j + dy8[k];
 
