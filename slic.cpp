@@ -322,6 +322,7 @@ void Slic::create_connectivity(Image2D& image)
       if (new_clusters[i][j] == -1) {
         std::vector<DGtal::Z2i::Point> elements;
         elements.push_back(DGtal::Z2i::Point(i, j));
+        new_clusters[i][j] = label;
 
         /* Find an adjacent label, for possible use later. */
         for (int k = 0; k < 4; k++) {
@@ -363,7 +364,8 @@ void Slic::create_connectivity(Image2D& image)
         label += 1;
       }
     }
-  } clusters = new_clusters;
+  }
+  clusters = new_clusters;
 }
 
 
