@@ -426,10 +426,12 @@ void Slic::display_center_grid(Image3D& image, DGtal::Color& colour)
  */
 void Slic::display_contours(Image3D& image, DGtal::Color& colour)
 {
-  const int dx8[8] = { -1, -1,  0,  1, 1, 1, 0, -1};
-  const int dy8[8] = { 0, -1, -1, -1, 0, 1, 1,  1};
+  const int dx14[14] = {-1, -1,  0,  1,  1,  1,  0, -1,  0,  0,  0,  0,  0,  0};
+  const int dy14[14] = { 0, -1, -1, -1,  0,  1,  1,  1, -1,  0,  1, -1,  0,  1};
+  const int dz14[14] = { 0,  0,  0,  0,  0,  0,  0,  0, -1, -1, -1,  1,  1,  1};
   unsigned int imageWidth = get_width(image);
   unsigned int imageHeight = get_height(image);
+  unsigned int imageDepth = get_depth(image);
 
   /* Initialize the contour vector and the matrix detailing whether a pixel
    * is already taken to be a contour. */
@@ -437,43 +439,53 @@ void Slic::display_contours(Image3D& image, DGtal::Color& colour)
   vec3db istaken;
 
   for (size_t i = 0; i < imageWidth; i++) {
-    std::vector<bool> nb;
+    std::vector<std::vector<bool>> nb_aisle;
 
     for (size_t j = 0; j < imageHeight; j++) {
-      nb.push_back(false);
+      std::vector<bool> nb;
+      
+      for (size_t k = 0; k < imageDepth; k++) {
+        nb.push_back(false);
+      }
+      nb_aisle.push_back(nb);
     }
-
-    istaken.push_back(nb);
+    istaken.push_back(nb_aisle);
   }
 
   /* Go through all the pixels. */
   for (size_t i = 0; i < imageWidth; i++) {
     for (size_t j = 0; j < imageHeight; j++) {
-      int nr_p = 0;
+      for (size_t k = 0; k < imageDepth; k++) {
+        int nr_p = 0;
 
-      /* Compare the pixel to its 8 neighbors. */
-      for (int k = 0; k < 8; k++) {
-        int x = i + dx8[k], y = j + dy8[k];
+        /* Compare the pixel to its 14 neighbors. */
+        for (int k = 0; k < 14; k++) {
+          int x = i + dx14[k]; 
+          int y = j + dy14[k];
+          int z = k + dz14[k];
 
-        if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
-          if (istaken[x][y] == false && clusters[i][j] != clusters[x][y]) {
-            nr_p += 1;
+          if (x >= 0 && (size_t)x < imageWidth && 
+              y >= 0 && (size_t)y < imageHeight &&
+              z >= 0 && (size_t)z < imageDepth) 
+          {
+            if (istaken[x][y][z] == false && clusters[i][j][k] != clusters[x][y][z]) {
+              nr_p += 1;
+            }
           }
         }
-      }
 
-      /* Add the pixel to the contour list if desired. */
-      if (nr_p >= 2) {
-        contours.push_back(DGtal::Z3i::Point(i, j));
-        istaken[i][j] = true;
+        /* Add the pixel to the contour list if desired. */
+        if (nr_p >= 2) {
+          contours.push_back(DGtal::Z3i::Point(i, j, k));
+          istaken[i][j][k] = true;
+        }
       }
     }
   }
 
   /* Draw the contour pixels. */
   for (size_t i = 0; i < contours.size(); i++) {
-    image.setValue(DGtal::Z3i::Point(contours[i][0], contours[i][1]), colour.getRGB());
-
+    image.setValue(DGtal::Z3i::Point(contours[i][0], contours[i][1], contours[i][2]), colour.getRGB());
   }
 }
 
@@ -493,16 +505,19 @@ void Slic::colour_with_cluster_means(Image3D& image)
   std::vector<Color_t> colors(centers.size());
   unsigned int imageWidth = get_width(image);
   unsigned int imageHeight = get_height(image);
+  unsigned int imageDepth = get_depth(image);
 
   /* Gather the colour values per cluster. */
   for (size_t i = 0; i < imageWidth; i++) {
     for (size_t j = 0; j < imageHeight; j++) {
-      int index = clusters[i][j];
-      Color_t color = get_color_at(image, i, j);
+      for (size_t k = 0; k < imageDepth; k++) {
+        int index = clusters[i][j][k];
+        Color_t color = get_color_at(image, i, j, k);
 
-      colors[index].r += color.r;
-      colors[index].g += color.g;
-      colors[index].b += color.b;
+        colors[index].r += color.r;
+        colors[index].g += color.g;
+        colors[index].b += color.b;
+      }
     }
   }
 
@@ -516,10 +531,12 @@ void Slic::colour_with_cluster_means(Image3D& image)
   /* Fill in. */
   for (size_t i = 0; i < imageWidth; i++) {
     for (size_t j = 0; j < imageHeight; j++) {
-      DGtal::Color col;
-      Color_t ncolor = colors[clusters[i][j]];
-      col.setRGBf(ncolor.r / 255.0, ncolor.g / 255.0, ncolor.b / 255.0 );
-      image.setValue(DGtal::Z3i::Point(i, j), col.getRGB());
+      for (size_t k = 0; k < imageDepth; k++) {
+        DGtal::Color col;
+        Color_t ncolor = colors[clusters[i][j][k]];
+        col.setRGBf(ncolor.r / 255.0, ncolor.g / 255.0, ncolor.b / 255.0 );
+        image.setValue(DGtal::Z3i::Point(i, j, k), col.getRGB());
+      }
     }
   }
 }
