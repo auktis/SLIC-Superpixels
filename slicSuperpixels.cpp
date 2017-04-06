@@ -15,8 +15,10 @@
 #include "DGtal/helpers/StdDefs.h"
 #include <DGtal/io/readers/GenericReader.h>
 #include <DGtal/io/readers/VolReader.h>
+#include <DGtal/io/writers/VolWriter.h>
+#include <DGtal/io/writers/PPMWriter.h>
 #include <DGtal/io/writers/GenericWriter.h>
-#include "DGtal/io/writers/VolWriter.h"
+
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -114,8 +116,9 @@ int main(int argc, char** argv)
     slic.display_center_grid(image, c2);
   }
 
-  IdColor id;
-  //VolWriter<Image3D, IdColor>::exportVol(nameImageOutput, image, id);
+  //IdColor id;
+  //VolWriter<Image3D, IdColor>::exportVol(nameImageOutput, image, false, id);
+  //PPMWriter<Image3D, IdColor>::exportPPM3D(nameImageOutput, image, id);
 
   
   return 1;
