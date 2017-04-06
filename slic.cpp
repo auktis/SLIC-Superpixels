@@ -363,7 +363,8 @@ void Slic::create_connectivity(Image2D& image)
         label += 1;
       }
     }
-  } clusters = new_clusters;
+  }
+  clusters = new_clusters;
 }
 
 
