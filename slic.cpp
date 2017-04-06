@@ -334,69 +334,77 @@ void Slic::create_connectivity(Image3D& image)
   int label = 0, adjlabel = 0;
   unsigned int imageWidth = get_width(image);
   unsigned int imageHeight = get_height(image);
+  unsigned int imageDepth = get_depth(image);
 
-  const int lims = (imageWidth * imageHeight) / (centers.size());
+  const int lims = (imageWidth * imageHeight * imageDepth) / (centers.size());
 
-  const int dx4[4] = { -1,  0,  1,  0};
-  const int dy4[4] = { 0 , -1,  0,  1};
+  const int dx6[6] = { -1,  0,  1,  0,  0,  0};
+  const int dy6[6] = { 0 , -1,  0,  1,  0,  0};
+  const int dz6[6] = { 0 ,  0,  0,  0, -1,  0};
 
   /* Initialize the new cluster matrix. */
   vec3di new_clusters;
 
   for (size_t i = 0; i < imageWidth; i++) {
-    std::vector<int> nc;
+    std::vector<std::vector<int>> nc;
 
     for (size_t j = 0; j < imageHeight; j++) {
-      nc.push_back(-1);
-    }
+      std::vector<int> tmpnc;
+      tmpnc.push_back(-1);
+        for (size_t K = 0; K < imageDepth; K++) {
+          nc.push_back(tmpnc);
+        }
 
+    }
     new_clusters.push_back(nc);
   }
 
   for (size_t i = 0; i < imageWidth; i++) {
     for (size_t j = 0; j < imageHeight; j++) {
-      if (new_clusters[i][j] == -1) {
-        std::vector<DGtal::Z3i::Point> elements;
-        elements.push_back(DGtal::Z3i::Point(i, j));
+      for (size_t l = 0; l < imageDepth; l++) {
+        if (new_clusters[i][j][l] == -1) {
+          std::vector<DGtal::Z3i::Point> elements;
+          elements.push_back(DGtal::Z3i::Point(i, j, l));
 
-        /* Find an adjacent label, for possible use later. */
-        for (int k = 0; k < 4; k++) {
-          int x = elements[0][0] + dx4[k], y = elements[0][1] + dy4[k];
-
-          if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
-            if (new_clusters[x][y] >= 0) {
-              adjlabel = new_clusters[x][y];
-            }
-          }
-        }
-
-        int count = 1;
-
-        for (int c = 0; c < count; c++) {
+          /* Find an adjacent label, for possible use later. */
           for (int k = 0; k < 4; k++) {
-            int x = elements[c][0] + dx4[k], y = elements[c][1] + dy4[k];
+            int x = elements[0][0] + dx6[k], y = elements[0][1] + dy6[k], z = elements[0][2] + dz6[k];
 
-            if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight) {
-              if (new_clusters[x][y] == -1 && clusters[i][j] == clusters[x][y]) {
-                elements.push_back(DGtal::Z3i::Point(x, y));
-                new_clusters[x][y] = label;
-                count += 1;
+            if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight && z >= 0 && (size_t)z < imageDepth ) {
+              if (new_clusters[x][y][z] >= 0) {
+                adjlabel = new_clusters[x][y][z];
               }
             }
           }
-        }
 
-        /* Use the earlier found adjacent label if a segment size is
-           smaller than a limit. */
-        if (count <= lims >> 2) {
+          int count = 1;
+
           for (int c = 0; c < count; c++) {
-            new_clusters[elements[c][0]][elements[c][1]] = adjlabel;
+            for (int k = 0; k < 4; k++) {
+              int x = elements[c][0] + dx6[k], y = elements[c][1] + dy6[k], z = elements[c][2] + dz6[k];
+
+              if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight && z >= 0 && (size_t)z < imageDepth) {
+                if (new_clusters[x][y][z] == -1 && clusters[i][j][l] == clusters[x][y][z]) {
+                  elements.push_back(DGtal::Z3i::Point(x, y, z));
+                  new_clusters[x][y][z] = label;
+                  count += 1;
+                }
+              }
+            }
           }
 
-          label -= 1;
-        }
+          /* Use the earlier found adjacent label if a segment size is
+             smaller than a limit. */
+          if (count <= lims >> 2) {
+            for (int c = 0; c < count; c++) {
+              new_clusters[elements[c][0]][elements[c][1]][elements[c][2]] = adjlabel;
+            }
 
-        label += 1;
+            label -= 1;
+          }
+
+          label += 1;
+        }
       }
     }
   }
@@ -413,7 +421,7 @@ void Slic::create_connectivity(Image3D& image)
 void Slic::display_center_grid(Image3D& image, DGtal::Color& colour)
 {
   for (size_t i = 0; i < centers.size(); i++) {
-    image.setValue(DGtal::Z3i::Point(centers[i].x, centers[i].y), colour.getRGB());
+    image.setValue(DGtal::Z3i::Point(centers[i].x, centers[i].y, centers[i].z), colour.getRGB());
   }
 }
 
