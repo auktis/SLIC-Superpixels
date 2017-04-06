@@ -367,7 +367,7 @@ void Slic::create_connectivity(Image3D& image)
           elements.push_back(DGtal::Z3i::Point(i, j, l));
 
           /* Find an adjacent label, for possible use later. */
-          for (int k = 0; k < 4; k++) {
+          for (int k = 0; k < 6; k++) {
             int x = elements[0][0] + dx6[k], y = elements[0][1] + dy6[k], z = elements[0][2] + dz6[k];
 
             if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight && z >= 0 && (size_t)z < imageDepth ) {
@@ -380,7 +380,7 @@ void Slic::create_connectivity(Image3D& image)
           int count = 1;
 
           for (int c = 0; c < count; c++) {
-            for (int k = 0; k < 4; k++) {
+            for (int k = 0; k < 6; k++) {
               int x = elements[c][0] + dx6[k], y = elements[c][1] + dy6[k], z = elements[c][2] + dz6[k];
 
               if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight && z >= 0 && (size_t)z < imageDepth) {
