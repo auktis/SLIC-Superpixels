@@ -36,7 +36,7 @@ typedef std::vector<std::vector<std::vector<int>>>    vec3di;
 typedef std::vector<std::vector<std::vector<bool>>>   vec3db;
 
 
-typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain, unsigned int> Image3D;
+typedef DGtal::ImageContainerBySTLVector<DGtal::Z3i::Domain, unsigned char> Image3D;
 
 
 class Slic {

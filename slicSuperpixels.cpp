@@ -116,9 +116,9 @@ int main(int argc, char** argv)
     slic.display_center_grid(image, c2);
   }
 
-  //IdColor id;
-  //VolWriter<Image3D, IdColor>::exportVol(nameImageOutput, image, false, id);
+
   //PPMWriter<Image3D, IdColor>::exportPPM3D(nameImageOutput, image, id);
+  VolWriter<Image3D>::exportVol(nameImageOutput, image);
 
   
   return 1;
