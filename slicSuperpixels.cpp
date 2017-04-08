@@ -84,7 +84,6 @@ int main(int argc, char** argv)
   
   cout << imageWidth << " " << imageHeight << " " << imageDepth << endl;
   
-  
 //  for (size_t i = 0; i < imageWidth; i++) {
 //    for (size_t j = 0; j < imageHeight; j++) {
 //      Color_t c = slic.get_color_at(image, i, j);
@@ -95,13 +94,15 @@ int main(int argc, char** argv)
 
   int nr = vm["n"].as<int>();
   int nc = vm["w"].as<int>();
-  double step = sqrt((imageWidth * imageHeight * imageDepth) / (double) nr);
-
+  double step = 30;//sqrt((imageWidth * imageHeight /** imageDepth*/) / (double) nr);
+  
   /* Perform the SLIC superpixel algorithm. */
 
   slic.generate_superpixels(image, step, nc);
-  slic.create_connectivity(image);
-  DGtal::Color c(0, 0, 204);
+  cout << "connect" << endl;
+  //slic.create_connectivity(image);
+  //DGtal::Color c(0, 0, 204);
+  DGtal::Color c(255, 255, 255);
   DGtal::Color c2(255, 100, 50);
 
   if (!vm.count("noDisplayContour")) {
@@ -120,6 +121,5 @@ int main(int argc, char** argv)
   //PPMWriter<Image3D, IdColor>::exportPPM3D(nameImageOutput, image, id);
   VolWriter<Image3D>::exportVol(nameImageOutput, image);
 
-  
   return 1;
 }

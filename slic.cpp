@@ -133,7 +133,7 @@ void Slic::init_data(Image3D& image)
     distances.push_back(dist_row);
   }
 
-
+  std::cout << "step : " << step << std::endl;
   /* Initialize the centers and counters. */
   for (size_t i = step; i < imageWidth - step / 2; i += step) {
     for (size_t j = step; j < imageHeight - step / 2; j += step) {
@@ -143,7 +143,7 @@ void Slic::init_data(Image3D& image)
         DGtal::Z3i::Point nc = find_local_minimum(image, DGtal::Z3i::Point(i, j, k));
 
         center = to_center_type(image, nc);
-
+        
         /* Append to vector of centers. */
         centers.push_back(center);
         center_counts.push_back(0);
@@ -244,23 +244,28 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
   init_data(image);
 
   /* Run EM for 10 iterations (as prescribed by the algorithm). */
-  for (int l = 0; l < NR_ITERATIONS; l++) {
+  for (int it = 0; it < 1/*NR_ITERATIONS*/; it++) {
     /* Reset distance values. */
     for (size_t i = 0; i < imageWidth; i++) {
       for (size_t j = 0; j < imageHeight; j++) {
-        for (size_t k = 0; k < imageHeight; k++) {
+        for (size_t k = 0; k < imageDepth; k++) {
           distances[i][j][k] = std::numeric_limits<double>::max();
         }
       }
     }
 
-
+    
     for (size_t j = 0; j < centers.size(); j++) {
+      //std::cout << "j = " << j << " | size : " << centers.size() << std::endl;
       /* Only compare to pixels in a 2 x step by 2 x step region. */
       for (int k = centers[j].x - step; k < centers[j].x + step; k++) {
         for (int l = centers[j].y - step; l < centers[j].y + step; l++) {
           for (int m = centers[j].z - step; m < centers[j].z + step; m++) {
-            if (k >= 0 && (size_t)k < imageWidth && l >= 0 && (size_t)l < imageHeight && m >= 0 && (size_t)m < imageDepth) {
+            //std::cout << k << " " << l << " " << m << std::endl;
+            if (k >= 0 && (size_t)k < imageWidth && 
+                l >= 0 && (size_t)l < imageHeight && 
+                m >= 0 && (size_t)m < imageDepth)
+            {
               Color_t color = get_color_at(image, k, l, m);
               double d = compute_dist(j, DGtal::Z3i::Point(k, l, m), color);
 
@@ -274,47 +279,47 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
           }
         }
       }
+    }
+    
+    /* Clear the center values. */
+    for (size_t j = 0; j < centers.size(); j++) {
+      centers[j].x = centers[j].y = centers[j].z = 0;
+      centers[j].color.r = centers[j].color.g = centers[j].color.b = 0;
+      center_counts[j] = 0;
+    }
 
-      /* Clear the center values. */
-      for (size_t j = 0; j < centers.size(); j++) {
-        centers[j].x = centers[j].y = centers[j].z= 0;
-        centers[j].color.r = centers[j].color.g = centers[j].color.b = 0;
-        center_counts[j] = 0;
-      }
-
-      /* Compute the new cluster centers. */
-      for (size_t j = 0; j < imageWidth; j++) {
-        for (size_t k = 0; k < imageHeight; k++) {
-          for (size_t l = 0; l < imageDepth; l++) {
-            int c_id = clusters[j][k][l];
-
-
-            if (c_id != -1) {
-              Color_t color = get_color_at(image, j, k, l);
-
-              centers[c_id].color.r += color.r;
-              centers[c_id].color.g += color.g;
-              centers[c_id].color.b += color.b;
-              centers[c_id].x += j;
-              centers[c_id].y += k;
-              centers[c_id].z += l;
+    /* Compute the new cluster centers. */
+    for (size_t j = 0; j < imageWidth; j++) {
+      for (size_t k = 0; k < imageHeight; k++) {
+        for (size_t l = 0; l < imageDepth; l++) {
+          int c_id = clusters[j][k][l];
 
 
-              center_counts[c_id] += 1;
-            }
+          if (c_id != -1) {
+            Color_t color = get_color_at(image, j, k, l);
+
+            centers[c_id].color.r += color.r;
+            centers[c_id].color.g += color.g;
+            centers[c_id].color.b += color.b;
+            centers[c_id].x += j;
+            centers[c_id].y += k;
+            centers[c_id].z += l;
+
+
+            center_counts[c_id] += 1;
           }
         }
       }
+    }
 
-      /* Normalize the clusters. */
-      for (size_t j = 0; j < centers.size(); j++) {
-        centers[j].color.r /= center_counts[j];
-        centers[j].color.g /= center_counts[j];
-        centers[j].color.b /= center_counts[j];
-        centers[j].x /= center_counts[j];
-        centers[j].y /= center_counts[j];
-        centers[j].z /= center_counts[j];
-      }
+    /* Normalize the clusters. */
+    for (size_t j = 0; j < centers.size(); j++) {
+      centers[j].color.r /= center_counts[j];
+      centers[j].color.g /= center_counts[j];
+      centers[j].color.b /= center_counts[j];
+      centers[j].x /= center_counts[j];
+      centers[j].y /= center_counts[j];
+      centers[j].z /= center_counts[j];
     }
   }
 }
@@ -368,7 +373,9 @@ void Slic::create_connectivity(Image3D& image)
 
           /* Find an adjacent label, for possible use later. */
           for (int k = 0; k < 6; k++) {
-            int x = elements[0][0] + dx6[k], y = elements[0][1] + dy6[k], z = elements[0][2] + dz6[k];
+            int x = elements[0][0] + dx6[k];
+            int y = elements[0][1] + dy6[k];
+            int z = elements[0][2] + dz6[k];
 
             if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight && z >= 0 && (size_t)z < imageDepth ) {
               if (new_clusters[x][y][z] >= 0) {
@@ -381,7 +388,9 @@ void Slic::create_connectivity(Image3D& image)
 
           for (int c = 0; c < count; c++) {
             for (int k = 0; k < 6; k++) {
-              int x = elements[c][0] + dx6[k], y = elements[c][1] + dy6[k], z = elements[c][2] + dz6[k];
+              int x = elements[c][0] + dx6[k];
+              int y = elements[c][1] + dy6[k];
+              int z = elements[c][2] + dz6[k];
 
               if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight && z >= 0 && (size_t)z < imageDepth) {
                 if (new_clusters[x][y][z] == -1 && clusters[i][j][l] == clusters[x][y][z]) {
@@ -408,6 +417,7 @@ void Slic::create_connectivity(Image3D& image)
       }
     }
   }
+  clusters = new_clusters;
 }
 
 
@@ -467,10 +477,10 @@ void Slic::display_contours(Image3D& image, DGtal::Color& colour)
         int nr_p = 0;
 
         /* Compare the pixel to its 14 neighbors. */
-        for (int k = 0; k < 14; k++) {
-          int x = i + dx14[k]; 
-          int y = j + dy14[k];
-          int z = k + dz14[k];
+        for (int n = 0; n < 14; n++) {
+          int x = i + dx14[n]; 
+          int y = j + dy14[n];
+          int z = k + dz14[n];
 
           if (x >= 0 && (size_t)x < imageWidth && 
               y >= 0 && (size_t)y < imageHeight &&
@@ -483,7 +493,7 @@ void Slic::display_contours(Image3D& image, DGtal::Color& colour)
         }
 
         /* Add the pixel to the contour list if desired. */
-        if (nr_p >= 2) {
+        if (nr_p >= 3) {
           contours.push_back(DGtal::Z3i::Point(i, j, k));
           istaken[i][j][k] = true;
         }
@@ -493,7 +503,7 @@ void Slic::display_contours(Image3D& image, DGtal::Color& colour)
 
   /* Draw the contour pixels. */
   for (size_t i = 0; i < contours.size(); i++) {
-    image.setValue(DGtal::Z3i::Point(contours[i][0], contours[i][1], contours[i][2]), colour.getRGB());
+    image.setValue(contours[i], colour.red());
   }
 }
 
