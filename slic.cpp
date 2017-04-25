@@ -133,7 +133,7 @@ void Slic::init_data(Image3D& image)
     distances.push_back(dist_row);
   }
 
-  std::cout << "step : " << step << std::endl;
+  std::cout << "step: " << step << std::endl;
   /* Initialize the centers and counters. */
   for (size_t i = step; i < imageWidth - step / 2; i += step) {
     for (size_t j = step; j < imageHeight - step / 2; j += step) {
@@ -150,6 +150,7 @@ void Slic::init_data(Image3D& image)
       }
     }
   }
+  std::cout << "centers: " << centers.size() << std::endl;
 }
 
 
@@ -244,7 +245,8 @@ void Slic::generate_superpixels(Image3D& image, int step, int nc)
   init_data(image);
 
   /* Run EM for 10 iterations (as prescribed by the algorithm). */
-  for (int it = 0; it < 1/*NR_ITERATIONS*/; it++) {
+  for (int it = 0; it < NR_ITERATIONS; it++) {
+    std::cout << "it: " << it << std::endl;
     /* Reset distance values. */
     for (size_t i = 0; i < imageWidth; i++) {
       for (size_t j = 0; j < imageHeight; j++) {
@@ -493,7 +495,7 @@ void Slic::display_contours(Image3D& image, DGtal::Color& colour)
         }
 
         /* Add the pixel to the contour list if desired. */
-        if (nr_p >= 3) {
+        if (nr_p >= 2) {
           contours.push_back(DGtal::Z3i::Point(i, j, k));
           istaken[i][j][k] = true;
         }

@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include "DGtal/base/Common.h"
 #include "DGtal/helpers/StdDefs.h"
@@ -94,7 +95,7 @@ int main(int argc, char** argv)
 
   int nr = vm["n"].as<int>();
   int nc = vm["w"].as<int>();
-  double step = 30;//sqrt((imageWidth * imageHeight /** imageDepth*/) / (double) nr);
+  double step = cbrt((imageWidth * imageHeight * imageDepth) / (double) nr);
   
   /* Perform the SLIC superpixel algorithm. */
 
