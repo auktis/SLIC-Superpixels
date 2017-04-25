@@ -65,7 +65,7 @@ private:
   void clear_data();
   void init_data(Image2D &image);
   
-public:
+
   /**
    * Helpers 
    */
@@ -78,7 +78,7 @@ public:
   double color_to_grayscale(Color_t color);
 
 
-
+public:
   /* Class constructors and destructor. */
   Slic();
   ~Slic();
