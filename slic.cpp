@@ -345,9 +345,9 @@ void Slic::create_connectivity(Image3D& image)
 
   const int lims = (imageWidth * imageHeight * imageDepth) / (centers.size());
 
-  const int dx6[6] = { -1,  0,  1,  0,  0,  0};
-  const int dy6[6] = { 0 , -1,  0,  1,  0,  0};
-  const int dz6[6] = { 0 ,  0,  0,  0, -1,  1};
+  const int dx6[6] = {-1,  0,  1,  0,  0,  0};
+  const int dy6[6] = { 0, -1,  0,  1,  0,  0};
+  const int dz6[6] = { 0,  0,  0,  0, -1,  1};
 
   /* Initialize the new cluster matrix. */
   vec3di new_clusters;
