@@ -101,8 +101,8 @@ int main(int argc, char** argv)
 
   slic.generate_superpixels(image, step, nc);
   cout << "connect" << endl;
-  //slic.create_connectivity(image);
-  //DGtal::Color c(0, 0, 204);
+  slic.create_connectivity(image);
+  
   DGtal::Color c(255, 255, 255);
   DGtal::Color c2(255, 100, 50);
 
@@ -122,5 +122,5 @@ int main(int argc, char** argv)
   //PPMWriter<Image3D, IdColor>::exportPPM3D(nameImageOutput, image, id);
   VolWriter<Image3D>::exportVol(nameImageOutput, image);
 
-  return 1;
+  return 0;
 }

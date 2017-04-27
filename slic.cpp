@@ -347,21 +347,19 @@ void Slic::create_connectivity(Image3D& image)
 
   const int dx6[6] = { -1,  0,  1,  0,  0,  0};
   const int dy6[6] = { 0 , -1,  0,  1,  0,  0};
-  const int dz6[6] = { 0 ,  0,  0,  0, -1,  0};
+  const int dz6[6] = { 0 ,  0,  0,  0, -1,  1};
 
   /* Initialize the new cluster matrix. */
   vec3di new_clusters;
 
   for (size_t i = 0; i < imageWidth; i++) {
     std::vector<std::vector<int>> nc;
-
     for (size_t j = 0; j < imageHeight; j++) {
       std::vector<int> tmpnc;
-      tmpnc.push_back(-1);
-        for (size_t K = 0; K < imageDepth; K++) {
-          nc.push_back(tmpnc);
-        }
-
+      for (size_t k = 0; k < imageDepth; k++) {
+        tmpnc.push_back(-1);
+      }
+      nc.push_back(tmpnc);
     }
     new_clusters.push_back(nc);
   }
@@ -379,7 +377,10 @@ void Slic::create_connectivity(Image3D& image)
             int y = elements[0][1] + dy6[k];
             int z = elements[0][2] + dz6[k];
 
-            if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight && z >= 0 && (size_t)z < imageDepth ) {
+            if (x >= 0 && (size_t)x < imageWidth && 
+                y >= 0 && (size_t)y < imageHeight && 
+                z >= 0 && (size_t)z < imageDepth)
+            {
               if (new_clusters[x][y][z] >= 0) {
                 adjlabel = new_clusters[x][y][z];
               }
@@ -394,7 +395,10 @@ void Slic::create_connectivity(Image3D& image)
               int y = elements[c][1] + dy6[k];
               int z = elements[c][2] + dz6[k];
 
-              if (x >= 0 && (size_t)x < imageWidth && y >= 0 && (size_t)y < imageHeight && z >= 0 && (size_t)z < imageDepth) {
+              if (x >= 0 && (size_t)x < imageWidth &&
+                  y >= 0 && (size_t)y < imageHeight &&
+                  z >= 0 && (size_t)z < imageDepth)
+              {
                 if (new_clusters[x][y][z] == -1 && clusters[i][j][l] == clusters[x][y][z]) {
                   elements.push_back(DGtal::Z3i::Point(x, y, z));
                   new_clusters[x][y][z] = label;
@@ -406,7 +410,8 @@ void Slic::create_connectivity(Image3D& image)
 
           /* Use the earlier found adjacent label if a segment size is
              smaller than a limit. */
-          if (count <= lims >> 2) {
+          //std::cout << "count: " << count << " | lim: " << (lims>>2) << std::endl;
+          if (count <= (lims >> 1)) {
             for (int c = 0; c < count; c++) {
               new_clusters[elements[c][0]][elements[c][1]][elements[c][2]] = adjlabel;
             }
